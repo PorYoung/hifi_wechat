@@ -1,0 +1,42 @@
+#解决异步的三种方法(promise)
+    let getSync = () => {
+        return new Promise((resolve,reject) => {
+            https.get('https://www.baidu.com',(res) => {
+                res.on('data',(d)=>{
+                    resolve(d)
+                })
+                .on('err',(err)=>{
+                    reject(err)
+                })
+            })
+        })
+    }
+1.Promise
+    getSync().then().catch()
+2.generator
+    let getSync = function*(){
+        return new Promise((resolve,reject) => {
+            https.get('https://www.baidu.com',(res) => {
+                res.on('data',(d)=>{
+                    resolve(d)
+                })
+                .on('err',(err)=>{
+                    reject(err)
+                })
+            })
+        })
+    }
+    var co = require('co')
+    co(function*(){
+        const value = getSync()
+        return value
+    }).then(function(value){},function(err){})
+3.await
+    async function async(){
+        let value = await getSync()
+        return value
+    }
+    async().then().catch()
+
+    一、URL &转义&amp;导致无法访问
+    二、获取用户信息如何保存和使用
