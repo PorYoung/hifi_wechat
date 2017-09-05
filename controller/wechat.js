@@ -162,18 +162,8 @@ var start = async (ctx,next) => {
 }
 
 function isAccessTokenValid(userinfo){
-    let now = new Date().getTime()
-    if(userinfo){
-        if(now >= userinfo.expires_in - 100){
-            //过期
-            return false
-        }else{
-            return true
-        }
-    }else{
-        return false
-    }
-    
+    const now = new Date().getTime()
+    return !!userinfo && (now >= userinfo.expires_in - 100)
 }
 function refreshToken(){
     function getAccessToken(){
