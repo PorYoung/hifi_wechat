@@ -1,11 +1,11 @@
 const sha1 = require('sha1');
 const Wechat = require('../model/wechatApi')
 const template = require('../model/wechatResponse')
+const database = require('../model/database')
 const config = {
     appID: 'wxfe86c090e3d88f8c',
     appSecret: '83ce792f93bab7df544fecae73725859',
-    token: 'PorYoung',
-    userinfo: {}
+    token: 'PorYoung'
 }
 //微信与服务器的验证
 var get_wechat = async (ctx,next) => {
@@ -82,10 +82,11 @@ var post_wechat = async (ctx,next) => {
 }
 //处理微信用户验证
 var userinfo_wechat = async (ctx,next) => {
-    let code = ctx.query.code
+    let userinfo = {}
+    userinfo.code = ctx.query.code
     function getAccessToken(){
         return new Promise((resolve,reject)=>{
-            let url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='+config.appID+'&secret='+config.appSecret+'&code='+code+'&grant_type=authorization_code'
+            let url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='+config.appID+'&secret='+config.appSecret+'&code='+userinfo.code+'&grant_type=authorization_code'
             require('https').get(url,(res)=>{
                 res.on('data',data=>resolve(data))
                 res.on('err',err=>reject(err))
@@ -102,15 +103,15 @@ var userinfo_wechat = async (ctx,next) => {
         if(!data.access_token){
             console.log(data.errcode + ' | ' + data.errmsg)
         }else{
-            config.userinfo = data
-            config.userinfo.expires_in = new Date().getTime() + data.expires_in*1000
+            userinfo = data
+            userinfo.expires_in = new Date().getTime() + data.expires_in*1000
             //授权成功，判断access_token是否有效
-            if(!isAccessTokenValid(config.userinfo)){
-                refreshToken()
+            if(!isAccessTokenValid(userinfo)){
+                refreshToken(userinfo)
             }else{
                 //拉取用户信息，存入用户数据库中
                 return new Promise((resolve,reject)=>{
-                    let url = 'https://api.weixin.qq.com/sns/userinfo?access_token='+config.userinfo.access_token+'&openid='+config.userinfo.openid+'&lang=zh_CN'
+                    let url = 'https://api.weixin.qq.com/sns/userinfo?access_token='+userinfo.access_token+'&openid='+userinfo.openid+'&lang=zh_CN'
                     require('https').get(url,(res)=>{
                         res.on('data',data=>resolve(data))
                         res.on('err',err=>reject(err))
@@ -126,31 +127,48 @@ var userinfo_wechat = async (ctx,next) => {
             console.log(e)
         }
         if(data.openid){
-            config.userinfo.nickname = data.nickname
-            config.userinfo.sex = data.sex
-            config.userinfo.province = data.province
-            config.userinfo.headimgurl = data.headimgurl
+            userinfo.nickname = data.nickname
+            userinfo.sex = data.sex
+            userinfo.province = data.province
+            userinfo.headimgurl = data.headimgurl
+            //存储入数据库
+            return new Promise((resolve,reject)=>{
+
+                database.connection.findOneAndUpdate({openid:userinfo.openid},{
+                    access_token: userinfo.access_token,
+                    expires_in: userinfo.expires_in,
+                    refresh_token: userinfo.refresh_token,
+                    openid: userinfo.openid,
+                    nickname: userinfo.nickname,
+                    sex: userinfo.sex,
+                    province: userinfo.province,
+                    headimgurl: userinfo.headimgurl
+                },{new:true,upsert:true},(err,info)=>{
+                    if(err){
+                        console.log('数据库存储失败'+userinfo.nickname)
+                        reject(err)
+                    }else{
+                        resolve(info)
+                    }
+                })
+            })
         }else{
             console.log(data.errcode + ' | '+ data.errmsg)
         }
     })
+    .then((info)=>{
+        database.log.create({
+            content: '用户:'+info.nickname+' openid:'+info.openid+'通过微信连接成功',
+            date: new Date().getTime()
+        },(err)=>{
+            if(err) console.log(err+' '+info.nickname+' 用户通过微信连接失败')
+        })
+    })
     .catch(err=>console.log(err))
     .catch(err=>console.log(err))
-    
-    setInterval(()=>{
-        refreshToken()
-    },7200*1000-100)
-    ctx.redirect('/app');
+    ctx.redirect('/allChat?openid='+userinfo.openid)
 }
-//主程序
-var APP = async (ctx,next)=>{
-    ctx.body = `<h1 style="text-align:center">userinfo</h1>
-    <div style="text-align:center;font-size:32px;">
-        <p>Name: ${config.userinfo.nickname}</p>
-        <p>sex: ${config.userinfo.sex}</p>
-        <p><img src="${config.userinfo.headimgurl}" style="width:60px;height:60px;border-radius:50%"></p>
-    </div>`
-}
+
 //引导微信用户进行验证的跳转页面
 var start = async (ctx,next) => {
     ctx.body = `
@@ -175,7 +193,7 @@ function isAccessTokenValid(userinfo){
     }
     
 }
-function refreshToken(){
+function refreshToken(userinfo){
     function getAccessToken(){
         return new Promise((resolve,reject)=>{
             let url = 'https://api.weixin.qq.com/sns/oauth2/refresh_token?appid='+config.appID+'&grant_type=refresh_token&refresh_token='+userinfo.refresh_token 
@@ -191,8 +209,8 @@ function refreshToken(){
         }else{
             try{
                 data = JSON.parse(data)
-                config.userinfo = data
-                config.userinfo.expires_in = new Date().getTime() + data.expires_in*1000
+                userinfo = data
+                userinfo.expires_in = new Date().getTime() + data.expires_in*1000
             }catch(e){
                 console.log(e)
             }
@@ -204,5 +222,4 @@ module.exports = {
     'POST /wechat' : post_wechat,
     'GET /start' : start,
     'GET /authorization' : userinfo_wechat,
-    'GET /app' : APP
 }

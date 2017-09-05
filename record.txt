@@ -40,3 +40,10 @@
 
     一、URL &转义&amp;导致无法访问
     二、获取用户信息如何保存和使用
+    三、koa2创建socket.io不成功
+        解决：应在创建server时监听，而不是在其后使用app.listen()监听
+        const server = require('http').Server(app.callback()).listen(3000)
+        var io = require("socket.io")(server,{
+            pingInterval: 6000*10,
+            pingTimeout: 6000*5
+        })

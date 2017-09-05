@@ -22,9 +22,6 @@ function addRouters(router,mapping){
         }else if(url.startsWith('POST ')){         
             path = url.substring(5);   
             router.post(path,mapping[url]);
-        }else{
-            //invalid url
-            console.log(`invalid url: ${url}`);
         }
     }
 }
