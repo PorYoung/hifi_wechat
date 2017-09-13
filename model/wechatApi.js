@@ -3,7 +3,7 @@ const fs = require('fs')
 let config = {
     prefix: 'https://api.weixin.qq.com/cgi-bin/token?',
     appID: 'wxfe86c090e3d88f8c',
-    appsecret: '83ce792f93bab7df544fecae73725859',
+    appSecret: '83ce792f93bab7df544fecae73725859',
     access_token: '',
     expires_in: ''
 }
@@ -29,7 +29,7 @@ module.exports = class Wechat {
     }
 
     async ReachAccessToken(type) {
-        const url = `${config.prefix}grant_type=client_credential&appid=${config.appid}&secret=${config.secret}`
+        const url = `${config.prefix}grant_type=client_credential&appid=${config.appID}&secret=${config.appSecret}`
         let data = await this.getAccessTokenSync(url).catch( err => 
             console.log(err)
         )
@@ -42,7 +42,9 @@ module.exports = class Wechat {
             config.access_token = data.access_token
             config.expires_in = new Date().getTime() + data.expires_in * 1000
             this.isAccessTokenValid(data) ?
-                fs.writeFile(__dirname+'/../access_token.txt', JSON.stringify(data))
+                fs.writeFile(__dirname+'/../access_token.txt', JSON.stringify(data), (err) => {
+                    err && console.log(err)
+                })
             :
                 this.updateAccessToken(opts)
         }else{
