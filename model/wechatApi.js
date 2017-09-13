@@ -15,7 +15,7 @@ module.exports = class Wechat {
         this.setIntervalGet()
     }
 
-    getAccessTokenSync() {
+    getAccessTokenSync(url) {
         return new Promise((resolve,reject)=>{
             https.get(url, (res) => {
                 res.on('data', data => resolve(data))
@@ -30,7 +30,7 @@ module.exports = class Wechat {
 
     async ReachAccessToken(type) {
         const url = `${config.prefix}grant_type=client_credential&appid=${config.appid}&secret=${config.secret}`
-        let data = await this.getAccessTokenSync().catch( err => 
+        let data = await this.getAccessTokenSync(url).catch( err => 
             console.log(err)
         )
         try{
