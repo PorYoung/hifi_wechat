@@ -105,9 +105,9 @@ var userinfo_wechat = async (ctx,next) => {
             config.userinfo = data
             config.userinfo.expires_in = new Date().getTime() + data.expires_in*1000
             //授权成功，判断access_token是否有效
-            if(!isAccessTokenValid(config.userinfo)){
-                refreshToken()
-            }else{
+            //if(!isAccessTokenValid(config.userinfo)){
+            //    refreshToken()
+            //}else{
                 //拉取用户信息，存入用户数据库中
                 return new Promise((resolve,reject)=>{
                     let url = 'https://api.weixin.qq.com/sns/userinfo?access_token='+config.userinfo.access_token+'&openid='+config.userinfo.openid+'&lang=zh_CN'
@@ -116,7 +116,7 @@ var userinfo_wechat = async (ctx,next) => {
                         res.on('err',err=>reject(err))
                     })
                 }) 
-            }
+            //}
         }
     })
     .then((data)=>{
