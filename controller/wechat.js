@@ -105,18 +105,17 @@ var userinfo_wechat = async (ctx,next) => {
             config.userinfo = data
             config.userinfo.expires_in = new Date().getTime() + data.expires_in*1000
             //授权成功，判断access_token是否有效
-            //if(!isAccessTokenValid(config.userinfo)){
-            //    refreshToken()
-            //}else{
-                //拉取用户信息，存入用户数据库中
-                return new Promise((resolve,reject)=>{
-                    let url = 'https://api.weixin.qq.com/sns/userinfo?access_token='+config.userinfo.access_token+'&openid='+config.userinfo.openid+'&lang=zh_CN'
-                    require('https').get(url,(res)=>{
-                        res.on('data',data=>resolve(data))
-                        res.on('err',err=>reject(err))
-                    })
-                }) 
-            //}
+            if(!isAccessTokenValid(config.userinfo)){
+                refreshToken()
+            }
+            //拉取用户信息，存入用户数据库中
+            return new Promise((resolve,reject)=>{
+                let url = 'https://api.weixin.qq.com/sns/userinfo?access_token='+config.userinfo.access_token+'&openid='+config.userinfo.openid+'&lang=zh_CN'
+                require('https').get(url,(res)=>{
+                    res.on('data',data=>resolve(data))
+                    res.on('err',err=>reject(err))
+                })
+            }) 
         }
     })
     .then((data)=>{
@@ -163,9 +162,9 @@ var start = async (ctx,next) => {
 
 function isAccessTokenValid(userinfo){
     const now = new Date().getTime()
-    return !!userinfo && (now >= userinfo.expires_in - 100)
+    return !!userinfo && !(now >= userinfo.expires_in - 100)
 }
-function refreshToken(){
+async function refreshToken(){
     function getAccessToken(){
         return new Promise((resolve,reject)=>{
             let url = 'https://api.weixin.qq.com/sns/oauth2/refresh_token?appid='+config.appID+'&grant_type=refresh_token&refresh_token='+userinfo.refresh_token 
@@ -175,7 +174,7 @@ function refreshToken(){
             })
         })
     }
-    getAccessToken().then(data=>{
+    await getAccessToken().then(data=>{
         if(!data.access_token){
             console.log(data.errcode + ' | ' + data.errmsg)
         }else{
