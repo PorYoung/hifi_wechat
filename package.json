@@ -1,0 +1,35 @@
+{
+  "requires": true,
+  "lockfileVersion": 1,
+  "dependencies": {
+    "ejs": "^2.5.7",
+    "heredoc": "^1.3.1",
+    "koa": "^2.3.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.2.1",
+    "koa-static": "^4.0.1",
+    "koa-views": "^6.0.2",
+    "koa-xml-body": "^2.0.0",
+    "mongoose": "^4.11.11",
+    "sha1": "^1.1.1",
+    "socket.io": "^2.0.3"
+  },
+  "name": "hifi_wechat",
+  "version": "1.0.0",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PorYoung/hifi_wechat.git"
+  },
+  "author": "PorYoung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PorYoung/hifi_wechat/issues"
+  },
+  "homepage": "https://github.com/PorYoung/hifi_wechat#readme",
+  "description": "现场活动弹幕，微信验证"
+}
