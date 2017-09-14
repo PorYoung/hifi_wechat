@@ -6,8 +6,10 @@ const config = {
     appID: 'wx3515b2c2a1e58b5c',
     appSecret: 'a23009c2e4f0af1688c84661014bcbb1',
     token: 'PorYoung',
-    urlPrefix: 'http://api.wechat.tutorhelp.cn',
-    userinfo: {},
+    urlPrefix: 'http://api.wechat.tutorhelp.cn'
+}
+let user = {
+    info: {},
     autoRefreshToken: {}
 }
 const httpsGetJSON = url => {
@@ -32,14 +34,14 @@ const isAccessTokenValid = userinfo => {
     return !!userinfo && now < userinfo.expires_in - 100
 }
 //重新获取token
-const refreshToken = async () => {
+const refreshToken = async (userinfo) => {
     let url = `https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${config.appID}&grant_type=refresh_token&refresh_token=${userinfo.refresh_token}`
     let data = await httpsGetJSON(url).catch(err => console.log(err))
     if(!data.access_token){
         console.log(data.errcode + ' | ' + data.errmsg)
     }else{
-        config.userinfo = data
-        config.userinfo.expires_in = new Date().getTime() + data.expires_in*1000
+        user.info = data
+        user.info.expires_in = new Date().getTime() + data.expires_in*1000
     }
 }
 //微信与服务器的验证
@@ -125,20 +127,20 @@ const userinfo_wechat = async (ctx, next) => {
     if(!data.access_token){
         console.log(data.errcode + ' | ' + data.errmsg)
     }else{
-        config.userinfo = data
-        config.userinfo.expires_in = new Date().getTime() + data.expires_in * 1000
+        user.info = data
+        user.info.expires_in = new Date().getTime() + data.expires_in * 1000
         //授权成功，判断access_token是否有效
-        isAccessTokenValid(config.userinfo) || refreshToken()
+        isAccessTokenValid(user.info) || refreshToken(user.info)
     }
     //拉取用户信息，存入用户数据库中
-    url = `https://api.weixin.qq.com/sns/userinfo?access_token=${config.userinfo.access_token}&openid=${config.userinfo.openid}&lang=zh_CN`
+    url = `https://api.weixin.qq.com/sns/userinfo?access_token=${user.info.access_token}&openid=${user.info.openid}&lang=zh_CN`
     data = await httpsGetJSON(url).catch(err => console.log(err))
     if(data.openid){
       const {nickname, sex, province, headimgurl} = data
-      config.userinfo = {nickname, sex, province, headimgurl}
-      config.autoRefreshToken.hasOwnProperty(data.openid) || 
-      (config.autoRefreshToken[data.openid] = setInterval(() => {
-          refreshToken()
+      user.info = {nickname, sex, province, headimgurl}
+      user.autoRefreshToken.hasOwnProperty(data.openid) || 
+      (user.autoRefreshToken[data.openid] = setInterval(() => {
+          refreshToken(user.info)
       }, 7200*1000 - 100))
     }else{
         console.log(data.errcode + ' | '+ data.errmsg)
@@ -149,16 +151,15 @@ const userinfo_wechat = async (ctx, next) => {
 const APP = async (ctx, next)=>{
     ctx.body = `<h1 style="text-align:center">userinfo</h1>
     <div style="text-align:center;font-size:32px;">
-        <p>Name: ${config.userinfo.nickname}</p>
-        <p>sex: ${config.userinfo.sex}</p>
-        <p><img src="${config.userinfo.headimgurl}" style="width:60px;height:60px;border-radius:50%"></p>
+        <p>Name: ${user.info.nickname}</p>
+        <p>sex: ${user.info.sex}</p>
+        <p><img src="${user.info.headimgurl}" style="width:60px;height:60px;border-radius:50%"></p>
     </div>`
 }
 //引导微信用户进行验证的跳转页面
 const start = async (ctx,next) => {
     ctx.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
 }
-
 module.exports = {
     'GET /wechat' : get_wechat,
     'POST /wechat' : post_wechat,
