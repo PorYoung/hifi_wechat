@@ -7,9 +7,9 @@ const config = {
     appSecret: 'a23009c2e4f0af1688c84661014bcbb1',
     token: 'PorYoung',
     urlPrefix: 'http://api.wechat.tutorhelp.cn',
-    userinfo: {}
+    userinfo: {},
+    autoRefreshToken: {}
 }
-
 const httpsGetJSON = url => {
     return new Promise((resolve, reject) => {
         https.get(url, res => {
@@ -27,7 +27,6 @@ const httpsGetJSON = url => {
         })
     })
 }
-
 const isAccessTokenValid = userinfo => {
     const now = new Date().getTime()
     return !!userinfo && now < userinfo.expires_in - 100
@@ -137,16 +136,17 @@ const userinfo_wechat = async (ctx, next) => {
     if(data.openid){
       const {nickname, sex, province, headimgurl} = data
       config.userinfo = {nickname, sex, province, headimgurl}
+      config.autoRefreshToken.hasOwnProperty(data.openid) || 
+      (config.autoRefreshToken[data.openid] = setInterval(() => {
+          refreshToken()
+      }, 7200*1000 - 100))
     }else{
         console.log(data.errcode + ' | '+ data.errmsg)
     }
-    setInterval(() => {
-        refreshToken()
-    }, 7200*1000 - 100)
     ctx.redirect('/app');
 }
 //主程序
-var APP = async (ctx, next)=>{
+const APP = async (ctx, next)=>{
     ctx.body = `<h1 style="text-align:center">userinfo</h1>
     <div style="text-align:center;font-size:32px;">
         <p>Name: ${config.userinfo.nickname}</p>
@@ -155,7 +155,7 @@ var APP = async (ctx, next)=>{
     </div>`
 }
 //引导微信用户进行验证的跳转页面
-var start = async (ctx,next) => {
+const start = async (ctx,next) => {
     ctx.body = `
         <h1 style="width:100%;text-align:center">跳转</h1>
         <div style="width:100%;border:solid 1px #ccc;text-align:center;height:80px;font-size:36px;line-height:80px;">
@@ -163,7 +163,6 @@ var start = async (ctx,next) => {
         <div>
     `
 }
-
 module.exports = {
     'GET /wechat' : get_wechat,
     'POST /wechat' : post_wechat,
