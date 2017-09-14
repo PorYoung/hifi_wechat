@@ -156,13 +156,9 @@ const APP = async (ctx, next)=>{
 }
 //引导微信用户进行验证的跳转页面
 const start = async (ctx,next) => {
-    ctx.body = `
-        <h1 style="width:100%;text-align:center">跳转</h1>
-        <div style="width:100%;border:solid 1px #ccc;text-align:center;height:80px;font-size:36px;line-height:80px;">
-        <a href='https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect'>跳转</a>
-        <div>
-    `
+    ctx.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
 }
+
 module.exports = {
     'GET /wechat' : get_wechat,
     'POST /wechat' : post_wechat,
