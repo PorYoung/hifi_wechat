@@ -47,7 +47,7 @@ var template = heredoc(()=>{/*
     </xml>
 */})
 
-var compiled = ejs.compile(template)
+const compiled = ejs.compile(template)
 
 module.exports = {
     compiled: compiled

@@ -1,7 +1,9 @@
+const koaRouter = require('koa-router') 
+const router = koaRouter()
+
 const sha1 = require('sha1')
-const Wechat = require('../model/wechatApi')
-const template = require('../model/wechatResponse')
-const database = require('../model/database')
+const Wechat = require('../../model/wechatApi')
+const template = require('../../model/wechatResponse')
 const https = require("https")
 const config = {
     appID: 'wx3515b2c2a1e58b5c',
@@ -11,8 +13,9 @@ const config = {
 }
 let user = {
     info: {},
-	autoRefreshToken: {}
+    autoRefreshToken: {}
 }
+let allUsers = {}
 const httpsGetJSON = url => {
     return new Promise((resolve, reject) => {
         https.get(url, res => {
@@ -36,62 +39,75 @@ const isAccessTokenValid = userinfo => {
     return !!userinfo && now < userinfo.expires_in - 100
 }
 //重新获取token
-const refreshToken = async (userinfo) => {
-    let url = `https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${config.appID}&grant_type=refresh_token&refresh_token=${userinfo.refresh_token}`
+const refreshToken = async(refresh_token) => {
+    let url = `https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=${config.appID}&grant_type=refresh_token&refresh_token=${refresh_token}`
     let data = await httpsGetJSON(url).catch(err => console.log(err))
-    if(!data.access_token){
+    if (!data.access_token) {
         console.log(data.errcode + ' | ' + data.errmsg)
-    }else{
+    } else {
+    /**
+     * bug 重灾区
+     * bug 重灾区
+     * bug 重灾区
+     * bug 重灾区
+     * bug 重灾区
+     * bug 重灾区
+     * bug 重灾区
+     */
         user.info = data
-        user.info.expires_in = new Date().getTime() + data.expires_in*1000
+        user.info.expires_in = new Date().getTime() + data.expires_in * 1000
     }
 }
 //微信与服务器的验证
-const get_wechat = async (ctx, next) => {
+const get_wechat = async(ctx, next) => {
     const token = config.token
-    const {timestamp, nonce, signature} = ctx.query
+    const {
+        timestamp,
+        nonce,
+        signature
+    } = ctx.query
     let arr = [token, timestamp, nonce].sort()
     const str = sha1(arr.join(''))
-    if(str === signature){
+    if (str === signature) {
         ctx.body = ctx.query.echostr
-    }else{
+    } else {
         ctx.body = "error"
         console.log("error")
     }
     const wechat = new Wechat(config)
 }
 //处理微信推送的消息
-const post_wechat = async (ctx,next) => {
+const post_wechat = async(ctx, next) => {
     let xmlData = ctx.request.body
     xmlData = xmlData.xml
     let message = {}
-    for(let key in xmlData){
+    for (let key in xmlData) {
         message[key] = xmlData[key][0]
     }
     //回复
-    var content = {}
+    let content = {}
     //事件消息
     content.toUser = message.FromUserName
     content.fromUser = message.ToUserName
     content.createTime = new Date().getTime()
-    if(message.MsgType === 'event'){
+    if (message.MsgType === 'event') {
         //订阅事件
-        if(message.Event === 'subscribe'){
+        if (message.Event === 'subscribe') {
             content.MsgType = 'text'
             content.content = '欢迎关注公众号'
         }
         //地理位置
-        else if(message.Event === 'LOCATION'){
+        else if (message.Event === 'LOCATION') {
             content.MsgType = 'text'
-            content.content = '您的位置是：纬度 '+message.Latitude+'\n经度 '+message.Longitude + '\n精度 '+message.Precision
+            content.content = '您的位置是：纬度 ' + message.Latitude + '\n经度 ' + message.Longitude + '\n精度 ' + message.Precision
         }
     }
     //普通消息
-    else if(message.MsgType === 'text'){
+    else if (message.MsgType === 'text') {
         //利用message.MsgId 查重
         //注意编码问题
         //1:跳转到授权界面获取code,并用code获取access_token
-        if(message.Content === '1'){
+        if (message.Content === '1') {
             content.MsgType = 'news'
             content.news = []
             let news1 = {
@@ -101,80 +117,89 @@ const post_wechat = async (ctx,next) => {
                 url: config.urlPrefix + '/start'
             }
             content.news.push(news1)
-        }else if(message.Content === '2'){
+        } else if (message.Content === '2') {
             content.MsgType = 'text'
             content.content = 'hi'
-        }else{
+        } else {
             content.MsgType = 'text'
             content.content = 'I can not understand'
         }
-    }else if(message.MsgType === 'image'){
+    } else if (message.MsgType === 'image') {
         content.MsgType = 'image'
         content.media_id = message.MediaId
-    }else{
+    } else {
         content.MsgType = 'text'
         content.content = 'I can not understand'
     }
-    ctx.body = template.compiled({content})
+    ctx.body = template.compiled({
+        content
+    })
 }
 //处理微信用户验证
-const userinfo_wechat = async (ctx, next) => {
+const userinfo_wechat = async(ctx, next) => {
     const code = ctx.query.code
-    let userinfo
     let url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${config.appID}&secret=${config.appSecret}&code=${code}&grant_type=authorization_code`
     let data = await httpsGetJSON(url).catch(err => console.log(err))
-    if(!data.access_token){
+    if (!data.access_token) {
         console.log(data.errcode + ' | ' + data.errmsg)
-    }else{
-        userinfo = data
-        userinfo.expires_in = new Date().getTime() + data.expires_in * 1000
+        ctx.body = data.errmsg
+        return
+    } else {
+        user.info = data
+        user.info.expires_in = new Date().getTime() + data.expires_in * 1000
         //授权成功，判断access_token是否有效
-        isAccessTokenValid(userinfo) || refreshToken(userinfo)
+        allUsers.hasOwnProperty(user.info.openid) || (allUsers[user.info.openid] = user.info.access_token)
+
+        isAccessTokenValid(user.info) || refreshToken(user.info.access_token)
     }
     //拉取用户信息，存入用户数据库中
-    url = `https://api.weixin.qq.com/sns/userinfo?access_token=${userinfo.access_token}&openid=${userinfo.openid}&lang=zh_CN`
+    url = `https://api.weixin.qq.com/sns/userinfo?access_token=${user.info.access_token}&openid=${user.info.openid}&lang=zh_CN`
     data = await httpsGetJSON(url).catch(err => console.log(err))
-    Object.assign(userinfo, data)
-    if(data.openid){
-        user.autoRefreshToken.hasOwnProperty(data.openid) || 
-        (user.autoRefreshToken[data.openid] = setInterval(() => {
-            refreshToken(userinfo)
-        }, 7200*1000 - 100))
-        let info = await database.connection.findOneAndUpdate({
-            openid:data.openid
+    Object.assign(user.info, data)
+    if (data.openid) {
+        user.autoRefreshToken.hasOwnProperty(data.openid) ||
+            (user.autoRefreshToken[data.openid] = setInterval(() => {
+                refreshToken(allUsers[data.openid])
+            }, 7200 * 1000 - 100))
+        let info = await db.connection.findOneAndUpdate({
+            openid: data.openid
         }, {
-            access_token: userinfo.access_token,
-            expires_in: userinfo.expires_in,
-            refresh_token: userinfo.refresh_token,
-            openid: userinfo.openid,
-            nickname: userinfo.nickname,
-            sex: userinfo.sex,
-            province: userinfo.province,
-            headimgurl: userinfo.headimgurl
+            access_token: user.info.access_token,
+            expires_in: user.info.expires_in,
+            refresh_token: user.info.refresh_token,
+            openid: user.info.openid,
+            nickname: user.info.nickname,
+            sex: user.info.sex,
+            province: user.info.province,
+            headimgurl: user.info.headimgurl
         }, {
-            new:true,
-            upsert:true
+            new: true,
+            upsert: true
         })
-        
-        database.log.create({
-            content: '用户:'+info.nickname+' openid:'+info.openid+'通过微信连接成功',
+
+        db.log.create({
+            content: '用户:' + info.nickname + ' openid:' + info.openid + '通过微信连接成功',
             date: new Date().getTime()
         }, err => {
-            err && console.log(err+' '+info.nickname+' 用户通过微信连接失败')
+            err && console.log(err + ' ' + info.nickname + ' 用户通过微信连接失败')
         })
-    }else{
-        console.log(data.errcode + ' | '+ data.errmsg)
+    } else {
+        console.log(data.errcode + ' | ' + data.errmsg)
+        ctx.body = data.errmsg
+        return
     }
-    ctx.redirect('/allChat?openid=' + userinfo.openid)
+    ctx.redirect('/allChat?openid=' + user.info.openid)
 }
 
 //引导微信用户进行验证的跳转页面
-const start = async (ctx,next) => {
+const start = async(ctx, next) => {
     ctx.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
 }
-module.exports = {
-    'GET /wechat' : get_wechat,
-    'POST /wechat' : post_wechat,
-    'GET /start' : start,
-    'GET /authorization' : userinfo_wechat,
-}
+
+router
+    .get('/wechat', get_wechat)
+    .post('/wechat', post_wechat)
+    .get('/start', start)
+    .get('/authorization', userinfo_wechat)
+
+module.exports = router

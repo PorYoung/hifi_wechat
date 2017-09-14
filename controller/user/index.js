@@ -1,4 +1,7 @@
-var fn_login = async (ctx,next) => {
+const koaRouter = require('koa-router') 
+const router = koaRouter()
+
+const fn_login = async (ctx,next) => {
     let username = ctx.request.body.username,
         password = ctx.request.body.password;
     if(username == "admin" && password == "1234"){
@@ -7,7 +10,7 @@ var fn_login = async (ctx,next) => {
         ctx.response.body = "<h1>failed</h1>";
     }
 }
-var fn_register = async (ctx,next) => {
+const fn_register = async (ctx,next) => {
     let username = ctx.request.body.username,
         password = ctx.request.body.password;
     if(!username || !password){
@@ -15,9 +18,9 @@ var fn_register = async (ctx,next) => {
     }else{
         ctx.body = "1";
     }
-    console.log(username,password);
+    console.log(username, password);
 }
-var fn_regiter_index = async (ctx,next) => {
+const fn_regiter_index = async (ctx,next) => {
     ctx.response.body = `<h1>Index</h1>
     <form action="/register" method="post">
         <p>Name: <input name="username" value="koa"></p>
@@ -25,7 +28,7 @@ var fn_regiter_index = async (ctx,next) => {
         <p><input type="submit" value="Submit"></p>
     </form>`;
 }
-var fn_login_index = async (ctx,next) => {
+const fn_login_index = async (ctx,next) => {
     ctx.response.body = `<h1>Index</h1>
     <form action="/login" method="post">
         <p>Name: <input name="username" value="admin"></p>
@@ -35,10 +38,10 @@ var fn_login_index = async (ctx,next) => {
     </form>`;
 }
 
-module.exports = {
-    "POST /login" : fn_login,
-    "POST /register" : fn_register,
-    "GET /register" : fn_regiter_index,
-    "GET /login" : fn_login_index
-}
+router
+    .get('/login', fn_login_index)
+    .post('/login', fn_login)
+    .get('/register', fn_regiter_index)
+    .post('/register', fn_register)
 
+module.exports = router

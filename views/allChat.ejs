@@ -299,7 +299,7 @@
         //定义函数：加载消息
         function loadMessage(page,callback){
             if(typeof(callback)!="function") callback = function(){};
-            $.get("allChat/getMessage?page="+page,function(data){
+            $.get("/allChat/getMessage?page="+page,function(data){
                 if(data == "-1" || data.length <= 0){
                     loadMessageFlag = 2;
                     callback();
