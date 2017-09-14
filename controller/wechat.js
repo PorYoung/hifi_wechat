@@ -136,8 +136,7 @@ const userinfo_wechat = async (ctx, next) => {
     url = `https://api.weixin.qq.com/sns/userinfo?access_token=${user.info.access_token}&openid=${user.info.openid}&lang=zh_CN`
     data = await httpsGetJSON(url).catch(err => console.log(err))
     if(data.openid){
-      const {nickname, sex, province, headimgurl} = data
-      user.info = {nickname, sex, province, headimgurl}
+      Object.assign(user.info, data)
       user.autoRefreshToken.hasOwnProperty(data.openid) || 
       (user.autoRefreshToken[data.openid] = setInterval(() => {
           refreshToken(user.info)
