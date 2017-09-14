@@ -7,6 +7,9 @@ const bodyparser = require("koa-bodyparser")
 //在处理请求前使用中间件
 app.use(xmlParser())
 app.use(bodyparser())
+app.use(require('koa-views')(__dirname + '/views', {
+	extension: 'ejs'
+}))
 //自动读取文件夹中的js文件并引入
 const controller = require("./controller");
 //允许传入文件夹地址，默认路径__dirname + "/controller"
