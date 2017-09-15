@@ -1,8 +1,8 @@
-const mongoose = require('../config')
+import mongoose from '../config'
 //设置日志类模板
 const logSchema = new mongoose.Schema({
   content : String,
   date : String
 })
 const log = mongoose.model('log', logSchema)
-module.exports = log
+export default log

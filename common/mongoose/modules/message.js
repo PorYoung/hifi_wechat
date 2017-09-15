@@ -1,4 +1,4 @@
-const mongoose = require('../config')
+import mongoose from '../config'
 //设计消息类模板
 const messageSchema = new mongoose.Schema({
   from : String,
@@ -12,4 +12,4 @@ const messageSchema = new mongoose.Schema({
   media_id : String
 })
 const message = mongoose.model('message', messageSchema)
-module.exports = message
+export default message

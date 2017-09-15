@@ -297,27 +297,25 @@
         //0未加载 1加载完成 2无更多消息
         var loadMessageFlag = 0;
         //定义函数：加载消息
-        function loadMessage(page,callback){
-            if(typeof(callback)!="function") callback = function(){};
+        function loadMessage(page, callback){
             $.get("/allChat/getMessage?page="+page,function(data){
                 if(data == "-1" || data.length <= 0){
                     loadMessageFlag = 2;
-                    callback();
                 }else{
                     var compiled = _.template($("#message-template").html());
                     $("#listPanel").prepend(compiled({data}));
                     //发出加载成功信号
                     loadMessageFlag = 1;
-                    callback();
                 }
+                callback && callback();
             })
         }
         //初始化读取第page=0页
         var page = 0;
-        loadMessage(page,function(){
+        loadMessage(page, function () {
              loadMessageFlag = 0;
              var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
-            $("#listPanel").animate({scrollTop: scrollHeight},300);
+            $("#listPanel").animate({scrollTop: scrollHeight}, 300);
         });
         //定义函数：touch事件
         var myTouchEvent = function(){
@@ -460,13 +458,13 @@
         myTouchEvent();
         //socket.io
         var allChat = io("/allChat");
-        allChat.on("connect",function(){
-            allChat.emit("notification",{from:"<%= nickname %>",content: "new connection"})  
+        allChat.on("connect", function(){
+            allChat.emit("notification", {from:"<%= nickname %>", content: "new connection"})  
         })
-        allChat.on("notification",function(msg){
+        allChat.on("notification", function(msg){
             showNotification(msg.content);
         })
-        allChat.on("public_message",function (msg) {
+        allChat.on("public_message", function (msg) {
             $("#listPanel").append(messageBoxCompiled(msg));
         })
         $("#sendBtn").click(function () {
@@ -476,12 +474,12 @@
                 headimgurl: "<%= headimgurl %>"
             }
             //内容为空则返回
-            if(!msg.content){return;}
-            allChat.emit("public_message",msg);
+            if(!msg.content) return;
+            allChat.emit("public_message", msg);
             $("#inputText").html("");
             $("#listPanel").append(messageBoxCompiled(msg,"right"));
             var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
-            $("#listPanel").animate({scrollTop: scrollHeight},300);
+            $("#listPanel").animate({scrollTop: scrollHeight}, 300);
 
             var minHeight = parseInt($("#inputText").css("minHeight"));
             if( $(this)[0].clientHeight !== minHeight){

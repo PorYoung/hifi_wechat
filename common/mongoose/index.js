@@ -1,9 +1,9 @@
 //连接数据库
-const dbConnetion = require('./connection') 
+import dbConnetion from './connection' 
 //引入数据库操作模型
-const connection = require('./modules/connection')
-const message = require('./modules/message')
-const log = require('./modules/log')
+import connection from './modules/connection'
+import message from './modules/message'
+import log from './modules/log'
 
 const db = {
   dbConnetion,
@@ -12,4 +12,4 @@ const db = {
   log
 }
 
-module.exports = db
+export default db

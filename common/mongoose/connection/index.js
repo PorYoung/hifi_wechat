@@ -1,4 +1,4 @@
-const mongoose = require('../config') 
+import mongoose from '../config'
 
 const options = {
   //user: 'admin',
@@ -21,4 +21,4 @@ dbConnection.once('open', function () {
     console.log('数据库链接成功')
 })
 
-module.exports = dbConnection
+export default dbConnection

@@ -1,10 +1,11 @@
-const koaRouter = require('koa-router') 
-const router = koaRouter()
+import koaRouter from 'koa-router'
 
-const sha1 = require('sha1')
-const Wechat = require('../../model/wechatApi')
-const template = require('../../model/wechatResponse')
-const https = require("https")
+import sha1 from 'sha1'
+import Wechat from '../../model/wechatApi'
+import template from '../../model/wechatResponse'
+import https from 'https'
+
+const router = koaRouter()
 const config = {
     appID: 'wx3515b2c2a1e58b5c',
     appSecret: 'a23009c2e4f0af1688c84661014bcbb1',
@@ -202,4 +203,4 @@ router
     .get('/start', start)
     .get('/authorization', userinfo_wechat)
 
-module.exports = router
+export default router

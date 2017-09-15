@@ -1,4 +1,4 @@
-const koaRouter = require('koa-router') 
+import koaRouter from 'koa-router'
 const router = koaRouter()
 
 const fn_login = async (ctx,next) => {
@@ -44,4 +44,4 @@ router
     .get('/register', fn_regiter_index)
     .post('/register', fn_register)
 
-module.exports = router
+export default router

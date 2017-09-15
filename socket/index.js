@@ -37,6 +37,6 @@ const handle = socket => {
   })
 }
 
-module.exports = {
-  handle
+export default {
+    handle
 }

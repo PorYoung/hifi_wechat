@@ -2,6 +2,7 @@
   "requires": true,
   "lockfileVersion": 1,
   "dependencies": {
+    "debug": "^3.0.1",
     "ejs": "^2.5.7",
     "heredoc": "^1.3.1",
     "koa": "^2.3.0",
@@ -16,10 +17,16 @@
   },
   "name": "hifi_wechat",
   "version": "1.0.0",
-  "main": "app.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node build/dev-server.js",
+    "start": "node build/dev-server.js",
+    "pm2": "pm2 start build/dev-server.js"
   },
   "repository": {
     "type": "git",

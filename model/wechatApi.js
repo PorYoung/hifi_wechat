@@ -1,5 +1,5 @@
-const https = require('https')
-const fs = require('fs')
+import https from 'https'
+import fs from 'fs'
 let config = {
     prefix: 'https://api.weixin.qq.com/cgi-bin/token?',
     appID: 'wxfe86c090e3d88f8c',
@@ -8,7 +8,7 @@ let config = {
     expires_in: ''
 }
 
-module.exports = class Wechat {
+export default class Wechat {
     constructor(opts) {
         Object.assign(config, opts)
         this.ReachAccessToken('firstGet')

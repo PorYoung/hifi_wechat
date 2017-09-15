@@ -1,7 +1,7 @@
-const koaRouter = require('koa-router') 
-const router = koaRouter()
+import koaRouter from 'koa-router'
+import getMessage from '../../model/getMessage.js'
 
-const getMessage = require("../../model/getMessage.js")
+const router = koaRouter()
 //主程序
 const allchat = async(ctx, next) => {
   //读取数据库
@@ -47,7 +47,6 @@ const getmessage = async(ctx, next) => {
     } else {
         status = '-1'
     }
-    console.log(status)
     ctx.body = status
 }
 
@@ -55,4 +54,4 @@ router
     .get('/allChat', allchat)
     .get('/allChat/getmessage', getmessage)
 
-module.exports = router
+export default router

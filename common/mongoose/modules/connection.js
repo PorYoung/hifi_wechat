@@ -1,5 +1,5 @@
 //引包
-const mongoose = require('../config')
+import mongoose from '../config'
 //设计连接用户类模板
 const connectionSchema = new mongoose.Schema({
   //微信用户验证信息
@@ -19,4 +19,4 @@ const connectionSchema = new mongoose.Schema({
   times : Number
 })
 const connection = mongoose.model('connection', connectionSchema)
-module.exports = connection
+export default connection

@@ -11,7 +11,7 @@ const findByPagination = async (criterion, limit, page, callback) => {
             const totalPageNum = parseInt(total / limit);
             // 超过总页数则返回null
             if (page > totalPageNum) {
-                callback(err, null);
+                callback(err, null)
             } else {
                 const start = limit * page
                 db.message
@@ -24,4 +24,6 @@ const findByPagination = async (criterion, limit, page, callback) => {
         })
 }
 
-module.exports = { findByPagination }
+export default {
+    findByPagination
+}

@@ -1,7 +1,7 @@
-const ejs = require('ejs')
-const heredoc = require('heredoc')
+import ejs from 'ejs'
+import heredoc from 'heredoc'
 
-var template = heredoc(()=>{/*
+const template = heredoc(() => {/*
     <xml>
     <ToUserName><![CDATA[<%= content.toUser %>]]></ToUserName>
     <FromUserName><![CDATA[<%= content.fromUser %>]]></FromUserName>
@@ -47,8 +47,6 @@ var template = heredoc(()=>{/*
     </xml>
 */})
 
-const compiled = ejs.compile(template)
-
-module.exports = {
-    compiled: compiled
+export default {
+    compiled: ejs.compile(template)
 }

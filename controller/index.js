@@ -1,13 +1,15 @@
-const koaRouter = require('koa-router') 
-const router = koaRouter()
+import koaRouter from 'koa-router'
 
-const allChatRouter = require('./allChat')
-const userRouter = require('./user')
-const wechatRouter = require('./wechat')
+//引入子路由
+import allChatRouter from './allChat'
+import userRouter from './user'
+import wechatRouter from './wechat'
+
+const router = koaRouter()
 
 router
     .use(allChatRouter.routes(), allChatRouter.allowedMethods())
     .use(userRouter.routes(), userRouter.allowedMethods())
     .use(wechatRouter.routes(), wechatRouter.allowedMethods())
 
-module.exports = router
+export default router
