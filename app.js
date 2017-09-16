@@ -1,17 +1,18 @@
 import Koa from 'koa'
 import views from 'koa-views'
+import koaRouter from 'koa-router'
 import staticServer from 'koa-static'
 import xmlParser from 'koa-xml-body'
 import bodyparser from 'koa-bodyparser'
 //连接数据库
 import db from './common/mongoose'
-//处理api请求
-import controller from './controller'
+//路由
+import router from './router'
+
 import http from 'http'
 import socketio from 'socket.io'
 //处理socket请求
 import socketHandle from './socket'
-
 // 设置为全局数据库连接句柄
 global.db = db
 
@@ -23,9 +24,9 @@ app.use(views(__dirname + '/views', {
   extension: 'ejs'
 }))
 //使用路由
-app.use(controller.routes(), controller.allowedMethods())
-app.use(staticServer('./public'))
-app.use(staticServer('./jquery-emoji'))
+app.use(router.routes(), router.allowedMethods())
+//静态资源
+app.use(new staticServer('./public'))
 //创建socketio
 const server = http.Server(app.callback()).listen(3000)
 const io = socketio(server, {
