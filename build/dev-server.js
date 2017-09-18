@@ -66,29 +66,22 @@ Object.keys(proxyTable).forEach(function (context) {
 })
 
 // handle fallback for HTML5 history API
-var fallback = require('connect-history-api-fallback')
+var fallback = require('../server/controller/rewriter')
 
 if (process.env.NODE_ENV === 'testing' || process.env.NODE_ENV === 'production') {
+  app.use(fallback())
   app.get(['/app', /^\/app\/.*$/], function (req, res) {
     res.sendFile(path.resolve('dist/index.html'))
   })
-  app.use(fallback())
   app.use('/static', express.static('./dist/static'))
 } else {
+  var staticPath = path.posix.join(config.dev.assetsPublicPath, config.dev.assetsSubDirectory) + '/'
   app.use(fallback({
     rewrites: [{
-      from: /^\/app$/,
+      from: ['/app', /^\/app\/.*$/],
+      exclude: [new RegExp(`^${staticPath}`), /\/app\.js$/,
+      /\.hot-update\.json$/, /\.hot-update\.js$/],
       to: '/app/index.html'
-    }, {
-      from: /^\/app\/.*$/,
-      to: function (context) {
-        var staticPath = path.posix.join(config.dev.assetsPublicPath, config.dev.assetsSubDirectory) + '/'
-        if (!context.parsedUrl.pathname.indexOf(staticPath) || context.parsedUrl.pathname.slice(-7) === '/app.js') {
-          return context.parsedUrl.pathname
-        } else {
-          return '/app/index.html'
-        }
-      }
     }]
   }))
 
