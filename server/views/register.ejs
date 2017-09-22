@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>register</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        /*
+        * Globals
+        */
+        /* Links */
+        a,
+        a:focus,
+        a:hover {
+            color: #fff;
+        }
+        /* Custom default button */
+        .btn-default,
+        .btn-default:hover,
+        .btn-default:focus {
+            color: #333;
+            text-shadow: none; /* Prevent inheritance from `body` */
+            background-color: #fff;
+            border: 1px solid #fff;
+        }
+        html,
+        body {
+            height: 100%;
+            /*background-color: #eee;*/
+            background-color: #333;
+            overflow: hidden;
+        }
+        body {
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,.5);
+        }
+
+        /* Extra markup and styles for table-esque vertical and horizontal centering */
+        .site-wrapper {
+            display: table;
+            width: 100%;
+            height: 100%; /* For at least Firefox */
+            min-height: 100%;
+            -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+            box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+        }
+        .site-wrapper-inner {
+            display: table-cell;
+            vertical-align: top;
+        }
+        .cover-container {
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        /* Padding for spacing */
+        .inner {
+            padding: 30px;
+        }
+        /*
+         * Header
+         */
+        .masthead-brand {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .masthead-nav > li {
+            display: inline-block;
+        }
+        .masthead-nav > li + li {
+            margin-left: 20px;
+        }
+        .masthead-nav > li > a {
+            padding-right: 0;
+            padding-left: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff; /* IE8 proofing */
+            color: rgba(255,255,255,.75);
+            border-bottom: 2px solid transparent;
+        }
+        .masthead-nav > li > a:hover,
+        .masthead-nav > li > a:focus {
+            background-color: transparent;
+            border-bottom-color: #a9a9a9;
+            border-bottom-color: rgba(255,255,255,.25);
+        }
+        .masthead-nav > .active > a,
+        .masthead-nav > .active > a:hover,
+        .masthead-nav > .active > a:focus {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+        @media (max-width: 767px) {
+            .glyphicon-eye-open {
+                display: none;
+            }
+            .inner h3{
+                float: left;
+            }
+            .inner nav{
+                float: right;
+            }
+        }
+        @media (min-width: 768px) {
+            .masthead-brand {
+                float: left;
+            }
+            .masthead-nav {
+                float: right;
+            }
+            .glyphicon-eye-open{
+                left: -25px;
+                top:3px;
+            }
+        }
+        /*
+         * Affix and center
+         */
+
+        @media (min-width: 569px) {
+            /* Pull out the header and footer */
+            .masthead {
+                position: fixed;
+                top: 0;
+            }
+            /* Start the vertical centering */
+            .site-wrapper-inner {
+                vertical-align: middle;
+            }
+            /* Handle the widths */
+            .masthead,
+            .cover-container {
+                width: 50%; /* Must be percentage or pixels for horizontal alignment */
+            }
+            .check-icon{
+                position: absolute;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .masthead,
+            .cover-container {
+                width: 400px;
+            }
+        }
+
+        @media (max-width: 568px) {
+            .masthead,
+            .cover-container {
+                width: 90%;
+            }
+            .check-icon{
+                position: initial;
+                display: block;
+                margin-left: 1em;
+            }
+        }
+        /* form input addon*/
+        /*.form-group{*/
+            /*position: relative;*/
+        /*}*/
+        .form-control{
+            display: inline;
+            width: 95%;
+        }
+        .check-icon{
+            margin: 8px;
+        }
+        .glyphicon-eye-open{
+            color: #868686;
+            cursor: pointer;
+        }
+        .glyphicon-eye-open:hover {
+            color: #686868;
+        }
+        .help-block a{
+            color: #686868;
+        }
+        .help-block a:hover{
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="site-wrapper">
+    <div class="site-wrapper-inner">
+        <div class="cover-container">
+            <div class="masthead clearfix">
+                <div class="inner">
+                    <h3 class="masthead-brand">allChat</h3>
+                    <nav>
+                        <ul class="nav masthead-nav">
+                            <li class="active"><a href="/">Sign in</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" maxlength="16" class="form-control" id="username" name="username" placeholder="Username">
+                    <span class="check-icon"></span>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" maxlength="20" class="form-control" id="password" name="password" placeholder="Password">
+                    <span class="check-icon"></span>
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm-password" name="confirm-password" placeholder="confirm Password">
+                    <span class="check-icon"></span>
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                </div>
+                <div class="form-group">
+                    <div class="help-block" style="text-align: center;"><a href="#" style="text-decoration: none;cursor: pointer;">Read me if you want</a></div>
+                </div>
+                <div style="text-align: center;"><button type="button" class="btn btn-default" id="submit" style="margin-left: -10px;" disabled="disabled">Sign Up</button>&nbsp;<button type="button" class="btn btn-default" id="signUp" style="margin-right: -10px;">Login</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="/static/js/jquery.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/js/myLoading.js"></script>
+<script>
+    $(function ($) {
+        let checkForm = {username: false, password: false, confirmPassword: false}
+        //submit按钮状态
+        let checkSubmit = function () {
+            if(checkForm.username&&checkForm.password&&checkForm.confirmPassword){
+                $("#submit").removeAttr("disabled");
+            }else{
+                $("#submit").attr("disabled","disabled");
+            }
+        }
+        //用户名验证 警惕ajax的异步性
+        $("#username").focus(function () {
+            $(".check-icon:eq(0)").removeClass("glyphicon glyphicon-ok glyphicon-remove").html("(字母、数字或_ 3-16位)").css("color","#FFF");
+        }).blur(function () {
+            if(!checkForm.username){
+                $(".check-icon:eq(0)").removeClass("glyphicon glyphicon-ok glyphicon-remove").html("请输入正确用户名").css("color","#FFF").animate({
+                    fontSize: "1.2em"
+                },function () {
+                    $(this).animate({fontSize:"1em"});
+                })
+            }
+            checkSubmit();
+        }).on("input porpertychange", function () {
+            let reg = new RegExp(/^(_?)([a-zA-Z0-9-](_)?){3,16}$/);
+            if (reg.test($(this).val())) {
+                $(".check-icon:eq(0)").html("<img src='/static/image/loading.gif'/>");
+                $.get("/register/checkUsername?username="+$("#username").val(), function (res) {
+                    if (res.toString() === "1") {
+                        //用户名可以使用
+                        $(".check-icon:eq(0)").removeClass("glyphicon glyphicon-remove").addClass("glyphicon glyphicon-ok").css({
+                            top: "initial",
+                            color: "#00EE00"
+                        }).html("").attr("title","用户名可以使用");
+                        checkForm.username = true;
+                        checkSubmit();
+                    } else {
+                        //用户名已存在
+                        $(".check-icon:eq(0)").removeClass("glyphicon glyphicon-ok").addClass("glyphicon glyphicon-remove").css({
+                            top: "initial",
+                            color: "#CC0000"
+                        }).html("").attr("title", "用户名已存在");
+                        checkForm.username = false;
+                        checkSubmit();
+                    }
+                });
+            } else {
+                //用户名输入错误
+                $(".check-icon:eq(0)").removeClass("glyphicon glyphicon-ok glyphicon-remove").html("您的格式不对哦").css("color","#FFF").removeAttr("title");
+                checkForm.username = false;
+            }
+            checkSubmit();
+        });
+        //点击显示密码
+        $(".glyphicon-eye-open:eq(0)").mousedown(function () {
+            $("#password").attr("type","text");
+        }).mouseup(function () {
+            $("#password").attr("type","password");
+        })
+        $(".glyphicon-eye-open:eq(1)").mousedown(function () {
+            $("#confirm-password").attr("type","text");
+        }).mouseup(function () {
+            $("#confirm-password").attr("type","password");
+        })
+        //密码验证
+        //对比确认框和密码框
+        let comparePassword = function () {
+            if($("#confirm-password").val() === $("#password").val() && checkForm.password){
+                //密码一致
+                $(".check-icon:eq(2)").removeClass("glyphicon glyphicon-remove").addClass("glyphicon glyphicon-ok").css({
+                    top: "initial",
+                    color: checkForm.passwordColor
+                }).attr("title","OK").html("");
+                checkForm.confirmPassword = true;
+                checkSubmit();
+            }else{
+                //密码不一致
+                $(".check-icon:eq(2)").removeClass("glyphicon glyphicon-ok").addClass("glyphicon glyphicon-remove").css({
+                    top: "initial",
+                    color: "#CC0000"
+                }).attr("title","unmatched").html("");
+                checkForm.confirmPassword = false;
+                $("#submit").attr("disabled","disabled");
+            }
+        }
+        $("#password").focus(function () {
+            $(".check-icon:eq(1)").removeClass("glyphicon glyphicon-remove glyphicon-ok").html("(letter|number|punctuation 6-20)").css("color","#FFF");
+        }).blur(function () {
+            if(!checkForm.password){
+                $(".check-icon:eq(1)").removeClass("glyphicon glyphicon-remove glyphicon-ok").html("请验证密码格式").css("color","#FFF").animate({
+                    fontSize: "1.2em"
+                },function () {
+                    $(this).animate({fontSize:"1em"});
+                });
+            }
+            checkSubmit();
+        }).on("input propertychange",function () {
+            let regH = new RegExp(/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&*:,.?;]+$)(?![a-zA-z\d]+$)(?![a-zA-z!@#$%^&*:,.?;]+$)(?![\d!@#$%^&*:,.?;]+$)[a-zA-Z\d!@#$%^&*:,.?;]{6,20}$/),
+                regM = new RegExp(/^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&*:,.?;]+$)[a-zA-Z\d!@#$%^&*:,.?;]{6,20}$/),
+                regL = new RegExp(/^(?:\d+|[a-zA-Z]+|[!@#$%^&*:,.?;]+){6,20}$/);
+            if(regH.test($(this).val())){
+                //密码高强度 字母+数字+特殊字符
+                $(".check-icon:eq(1)").removeClass("glyphicon glyphicon-remove").addClass("glyphicon glyphicon-ok").css({
+                    top: "initial",
+                    color: "#00EE00"
+                }).attr("title","密码强度高").html("");
+                checkForm.password = true;
+                checkForm.passwordColor = "#00EE00";
+            }else if(regM.test($(this).val())){
+                //密码高强中 字母+数字+特殊字符
+                $(".check-icon:eq(1)").removeClass("glyphicon glyphicon-remove").addClass("glyphicon glyphicon-ok").css({
+                    top: "initial",
+                    color: "#FF8000"
+                }).attr("title","密码强度中").html("");
+                checkForm.password = true;
+                checkForm.passwordColor = "#FF8000";
+            }else if(regL.test($(this).val())){
+                //密码高强弱 字母+数字+特殊字符
+                $(".check-icon:eq(1)").removeClass("glyphicon glyphicon-remove").addClass("glyphicon glyphicon-ok").css({
+                    top: "initial",
+                    color: "#B0171F"
+                }).attr("title","密码强度弱").html("");
+                checkForm.password = true;
+                checkForm.passwordColor = "#B0171F";
+            }else{
+                $(".check-icon:eq(1)").removeClass("glyphicon glyphicon-ok").addClass("glyphicon glyphicon-remove").css({
+                    top: "initial",
+                    color: "#CC0000"
+                }).attr("title","密码格式不正确").html("");
+                checkForm.password = false;
+                checkForm.passwordColor = "#CC0000";
+            }
+            //同时对比密码确认框
+            comparePassword();
+        })
+        //确认密码框验证
+        $("#confirm-password").focus(function () {
+            $(".check-icon:eq(2)").html("");
+        }).blur(function () {
+            if(!checkForm.confirmPassword && checkForm.password){
+                $(".check-icon:eq(2)").removeClass("glyphicon glyphicon-remove glyphicon-ok").html("两次密码不一致").css("color","#FFF").animate({
+                    fontSize: "1.2em"
+                },function () {
+                    $(this).animate({fontSize:"1em"});
+                });
+            }
+            checkSubmit();
+        }).on("input propertychange",function () {
+            comparePassword();
+        });
+        //提交表单
+        $("#submit").click(function () {
+            if(checkForm.username&&checkForm.password&&checkForm.confirmPassword){
+                //表单验证完成
+                let html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
+                let clearMyLoading = myLoading("Waiting...",html);
+                $.post("/register",{username: $("#username").val(), password: $("#password").val()},function (res) {
+                    if(res === "1"){
+                        //注册成功
+                        clearMyLoading();
+                        html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                        clearMyLoading = myLoading("Success",html);
+                        setTimeout(function () {
+                            clearMyLoading();
+                            window.location.href = "/wall?"+$("#username").val();
+                        },1200);
+                    }else{
+                        //注册失败
+                        clearMyLoading();
+                        html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
+                        clearMyLoading = myLoading("Failed",html);
+                        setTimeout(function () {
+                            clearMyLoading();
+                        },1200);
+                    }
+                })
+            }
+        })
+    })
+</script>
+</body>
+</html>

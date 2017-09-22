@@ -48,10 +48,7 @@ export default class {
             })
         } else {
             //返回错误:重新登录
-            return res.send(`<h1 style="text-align:center">userinfo</h1>
-            <div style="text-align:center;font-size:32px;">
-                <p>用户信息验证失败，请重新登录</p>
-            </div>`) 
+            return res.sendStatus(404)
         }
     }
 
