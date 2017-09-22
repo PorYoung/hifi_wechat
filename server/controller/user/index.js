@@ -13,7 +13,7 @@ export default class {
         if(userinfo && userinfo.password == password){
             //登陆成功
             req.session.username = username
-            return res.redirect('1')
+            return res.send('1')
         }else{
             //登陆失败
             return res.send('-1')
@@ -23,11 +23,11 @@ export default class {
     static async fn_register(req, res, next) {
         let {username, password} = req.body
         if (!username || !password) {
-            res.send("-1")
+            return res.send("-1")
         } else {
             let userinfo={}
             //检查用户名是否已存在
-            userinfo = db.user.findOne({username:username})
+            userinfo = await db.user.findOne({username:username})
             if(userinfo){
                 //用户已存在
                 return res.send('-2')
