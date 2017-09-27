@@ -395,7 +395,7 @@
                         clearMyLoading = myLoading("Success",html);
                         setTimeout(function () {
                             clearMyLoading();
-                            window.location.href = "/wall?"+$("#username").val();
+                            window.location.href = "/wall?username="+$("#username").val();
                         },1200);
                     }else{
                         //注册失败

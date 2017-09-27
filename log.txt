@@ -4,3 +4,61 @@
     /model/database.js
 3.完成修改微信验证与用户信息获取 数据库读写方式
 4.通过访问/allChat 加上用户openid的方式不安全，需要改进
+
+5.在表user添加新字段 settings:Object 用以保存用户对活动的设计
+Object{
+    //界面设计(待定)
+    logoSrc: String     //logo
+    eventTopic: String   //活动名
+    sponsors: Array     /*举办、赞助方    [{
+                                                name: String,
+                                                logoSrc: String,
+                                                profile: String
+                                            },{}]
+                        */
+    //功能选择
+    hasVote: boolean    //投票
+    hasLottery: boolean //抽奖
+    hasGuests: boolean  //来宾
+}
+功能选择设计：
+    已开启功能图标背景被绿色
+
+
+    <!--此处应可设置单页显示的消息数，默认四个-->
+                        <div>
+                            <!--此处应可设置用户头像显示的方式，默认方形-->
+                            <header><img src="/static/image/u_logo.ico"></header>
+                            <div>
+                                <span>username</span>
+                                <span>this is a message  this is a message this is a message this is a message this is a message this is a message</span>
+                            </div>
+                            <footer><i class="fa fa-hand-o-right"></i></footer>
+                        </div>
+                        <div>
+                            <!--此处应可设置用户头像显示的方式，默认方形-->
+                            <header><img src="/static/image/u_logo.ico"></header>
+                            <div>
+                                <span>username</span>
+                                <span>this is a message</span>
+                            </div>
+                            <footer><i class="fa fa-hand-o-right"></i></footer>
+                        </div>
+                        <div>
+                            <!--此处应可设置用户头像显示的方式，默认方形-->
+                            <header><img src="/static/image/u_logo.ico"></header>
+                            <div>
+                                <span>username</span>
+                                <span>this is a message</span>
+                            </div>
+                            <footer><i class="fa fa-hand-o-right"></i></footer>
+                        </div>
+                        <div>
+                            <!--此处应可设置用户头像显示的方式，默认方形-->
+                            <header><img src="/static/image/u_logo.ico"></header>
+                            <div>
+                                <span>username</span>
+                                <span>this is a message</span>
+                            </div>
+                            <footer><i class="fa fa-hand-o-right"></i></footer>
+                        </div>

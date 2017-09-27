@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="/static/css/screen.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <title>screen</title>
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/myUtils.js"></script>
+</head>
+<body>
+    <!--背景绘制-->
+    <div id="background" style="position: absolute;left: 0;right: 0;top: 0;bottom: 0;"></div>
+    <script src="/static/js/jquery-starfield.js"></script>
+    <div id="app">
+        <!--墙-->
+        <div class="wall">
+            <div class="wallHd">
+                <p><img src="/static/image/logo.png"></p>
+                <p>活动名称(公告)</p>
+                <p>消息数量(动态)</p>
+            </div>
+            <div class="wallCon">
+                <div id="w-message">
+                    <message-show v-for="msg in messageArr" :msg="msg"></message-show>
+                </div>
+                <div id="w-image"></div>
+                <div id="w-guests"></div>
+                <div id="w-vote"></div>
+                <div id="w-lottery"></div>
+            </div>
+            <div class="wallCtr">
+                <!--此处应可修改info信息和显示效果-->
+                <div id="w-ctr-info"></div>
+                <span><i class="fa fa-chevron-circle-up"></i></span>
+                <div id="w-ctr-btn">
+                    <div id="btn-subtitle"><i class="fa fa-microphone-slash" aria-hidden="true"></i>弹幕</div>
+                    <div id="btn-message"><i class="fa fa-commenting-o" aria-hidden="true"></i>消息</div>
+                    <div id="btn-image"><i class="fa fa-image" aria-hidden="true"></i>图片</div>
+                    <div id="btn-guests"><i class="fa fa-user-circle-o"></i>来宾</div>
+                    <div id="btn-vote"><i class="fa fa-bar-chart"></i>投票</div>
+                    <div id="btn-lottery"><i class="fa fa-gift"></i>彩蛋</div>
+                </div>
+            </div>
+        </div>
+        <!--弹幕-->
+        <div id="liveSubtitle" v-if="liveSubtitleSeen">
+            <live-subtitle v-for="(msg,index) in liveSubtitleArr" :msg="msg" :id="'liveSubtitle-'+index" :style="'top:'+ msg.cssTop +'px;animation-delay:'+ msg.cssAnimationDelay +'s;'"></live-subtitle>
+        </div>
+    </div>
+    <script>
+        $(function ($) {
+            $("#background").starfield({
+                starDensity: 0.5,
+                mouseScale: 1,
+                seedMovement: false,
+                BOUNDX: 1000,
+                BOUNDY: 500
+            })
+            var iconEventArr = [
+                ['#btn-message','#w-message','fa-commenting-o','fa-commenting'],
+                ['#btn-image','#w-image','fa-image','fa-photo'],
+                ['#btn-guests','#w-guests','fa-user-circle-o','fa-user-circle'],
+                ['#btn-lottery','#w-lottery','fa-gift','fa-smile-o'],
+                ['#btn-vote','#w-vote','fa-bar-chart','fa-line-chart']
+            ]
+            var menuEvent = new iconEvent({
+                id_linkActiveClass: 'wallCon-active',
+                arr: iconEventArr
+            })
+            menuEvent.iconHoverBind().iconClickBind()
+        })
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/static/js/vue.min.js"></script>
+    <script type="text/x-template" id="message-template">
+        <div>
+            <!--此处应可设置用户头像显示的方式，默认方形-->
+            <header><img :src="msg.headimgurl"></header>
+            <div>
+                <span>{{ msg.nickname }}</span>
+                <span v-html="msg.content">{{ msg.content }}</span>
+            </div>
+            <footer><i class="fa fa-hand-o-right"></i></footer>
+        </div>
+    </script>
+    <script>
+        Vue.component('live-subtitle',{
+            template:'<div v-html="msg.content"><img :src="msg.headimgurl">{{ msg.content }}</div>',
+            props:['msg']
+        })
+        Vue.component('message-show',{
+            template:'#message-template',
+            props:['msg']
+        })
+        var vm = new Vue({
+            el:'#app',
+            data:{
+                liveSubtitleData:[],
+                liveSubtitleArr:[],
+                liveSubtitleCount:0,
+                messageArr:[],
+                messageCount:0,
+                liveSubtitleSeen:false,
+                intervalGetSubtitleTimer:undefined,
+                intervalMoveTimer:undefined,
+                intervalChangeTimer:undefined,
+                intervalGetMessageTimer:undefined
+            },
+            watch: {
+                liveSubtitleArr: function (newarr) {
+                    if (newarr.length >= 21) this.liveSubtitleArr.splice(0, 5)
+                },
+                messageArr:function (newarr) {
+                    if(newarr.length > 5) this.messageArr.splice(0,5)
+                },
+                liveSubtitleSeen:function (newval,oldval) {
+                    if(newval){
+                        this.intervalGetSubtitle()
+                        //间隔15秒拉取一次数据显示在屏幕上
+                        this.intervalGetSubtitleTimer = setInterval(this.intervalGetSubtitle,15*1000)
+                        this.intervalMoveTimer = setInterval(this.intervalMove,30*1000)
+                        this.intervalChangeTimer = setInterval(this.intervalChange,60*1000)
+                    }else{
+                        clearInterval(this.intervalChangeTimer)
+                        clearInterval(this.intervalMoveTimer)
+                        clearInterval(this.intervalGetSubtitleTimer)
+                    }
+
+                },
+            },
+            methods:{
+                randomValue:function (times) {
+                    times = times || 1
+                    return Math.floor(Math.random() * 10 + 1) * times
+                },
+                intervalGetSubtitle:function () {
+                    var count = 0;
+                    vm.liveSubtitleData.forEach(function (msg,index) {
+                        if(index >= vm.liveSubtitleCount && index < vm.liveSubtitleCount + 5) {
+                            msg.cssTop = vm.randomValue(60)
+                            msg.cssAnimationDelay = vm.randomValue()
+                            vm.liveSubtitleArr.push(msg)
+                            count++;
+                        }
+                    })
+                    vm.liveSubtitleCount += count
+                },
+                intervalGetMessage:function () {
+                    vm.liveSubtitleData.forEach(function (msg,index) {
+                        if(index >= vm.messageCount && index < vm.messageCount + 5) {
+                            vm.messageArr.push(msg)
+                            vm.messageCount ++
+                        }
+                    })
+                },
+                intervalMove:function () {
+                    var p = []
+                    vm.liveSubtitleArr.forEach(function (msg) {
+                        p.push(msg.cssTop)
+                    })
+                    p.sort(function () {
+                        return 0.5 - Math.random()
+                    })
+                    vm.liveSubtitleArr.forEach(function (msg,index) {
+                        msg.cssTop = p[index]
+                    })
+                },
+                intervalChange:function () {
+                    vm.liveSubtitleArr.forEach(function (msg,index) {
+                        msg.cssTop = vm.randomValue(60)
+                    })
+                }
+            }
+        })
+        setInterval(vm.intervalGetMessage,15*1000)
+
+        var liveSubtitle = io('/allChat')
+        liveSubtitle.on("connect",function () {
+            liveSubtitle.emit("notification",{from:"wall-screen",content:"wall screen connection"})
+        })
+        liveSubtitle.on("notification",function (msg) {
+            console.log(msg.content)
+        })
+        liveSubtitle.on("public_message",function(msg){
+            //接受的消息暂存于liveSubtitleData中，分批读取入liveSubtitleArr
+            //最大存储100条消息(其他方案:存放在数据库中，定时拉取)
+            if(vm.liveSubtitleData.length > 100){
+                vm.liveSubtitleData.splice(0,10)
+            }
+            vm.liveSubtitleData.push(msg)
+            console.log("新数据入库")
+            if(vm.liveSubtitleArr.length < 5) {
+                vm.intervalGetSubtitle()
+                vm.intervalGetMessage()
+            }
+//            msg.cssTop = vm.randomValue(60)
+//            vm.liveSubtitleArr.forEach(function(item){
+//                if(item.cssTop == msg.cssTop) {
+//                    msg.cssTop += 30
+//                    return
+//                }
+//            })
+//            msg.cssAnimationDelay = vm.randomValue()
+//            vm.liveSubtitleArr.splice(this.length,0,msg)
+        })
+
+        var liveSubtitleIconArr = [
+            ['#btn-subtitle','#liveSubtitle','fa-microphone-slash','fa-microphone']
+        ]
+        new iconEvent({
+            arr:liveSubtitleIconArr,
+            iconEventBan: false,
+            extraEvent:function (id,id_link,that) {
+                $(id).off()
+                var idx = 0
+                this.arr.forEach(function (item,index) {
+                    if(item[0] == id) {
+                        idx = index
+                        return
+                    }
+                })
+                var tmp = this.arr[idx][3]
+                this.arr[idx][3] = this.arr[idx][4]
+                this.arr[idx][4] = tmp
+                var active = this.arr[idx]
+                this.arr = []
+                this.arr.push(active)
+                that.iconClickBind()
+                that.iconHoverBind()
+                vm.liveSubtitleSeen = !vm.liveSubtitleSeen
+            }
+        }).iconClickBind().iconHoverBind()
+    </script>
+</body>
+</html>

@@ -16,5 +16,6 @@ router
   .post('/register', User.fn_register)
   .get('/register/checkUsername', User.fn_check_username)
   .get('/wall',Wall.wall)
+  .get('/wall/screen',Wall.screen)
 
 export default router

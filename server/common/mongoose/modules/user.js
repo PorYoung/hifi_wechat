@@ -2,12 +2,10 @@
 import mongoose from '../config'
 //设计使用用户类模板
 const userSchema = new mongoose.Schema({
-    //用户名
+    //用户名+密码+其他设置
     username : String,
     password : String,
-    province : String,
-    //用户头像
-    headimgurl : String
+    settings : Object
 })
 const user = mongoose.model('user', userSchema)
 export default user

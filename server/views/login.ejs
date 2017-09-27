@@ -78,7 +78,7 @@
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="/static/js/bootstrap.min.js"></script>
 <script>
-    $("#submit").click(function () {
+    var login = function () {
         $.post("/login",{username:$("#username").val(),password:$("#password").val()},function (res) {
             switch (res.toString()){
                 case "-2":
@@ -91,15 +91,23 @@
                     $("#alert-s2").html("欢迎 "+$("#username").val()+"登陆☺");
                     $("#alert-s1").addClass("glyphicon glyphicon-ok").attr("color","green").html("");
                     setTimeout(function () {
-                        window.location.href = "/wall?"+$("#username").val();
+                        window.location.href = "/wall";
                     },1000);
                     break;
                 default:
-                $("#alert").show(500);
-                $("#alert-s2").html("Sorry.Please try again.");
-                break;
+                    $("#alert").show(500);
+                    $("#alert-s2").html("Sorry.Please try again.");
+                    break;
             }
         })
+    }
+    $("#submit").click(function () {
+        login();
+    })
+    $("#password").keyup(function (e) {
+        if(e && e.keyCode == '13'){
+            login();
+        }
     })
     $(function ($) {
         $("#register").click(function () {

@@ -1,0 +1,302 @@
+html body, .container{
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+.container{
+    position: absolute;
+}
+.container, .c-l, .c-l > div{
+    display: flex;
+    display: -webkit-flex;
+    justify-content: space-around;
+    height: 100%;
+}
+.c-l{
+    flex: 2;
+    flex-direction: column;
+    /*background: #cccccc;*/
+    background: rgb(246,248,250);
+}
+.c-r{
+    flex: 8;
+}
+.c-l > div{
+    align-items: center;
+}
+.c-l-tile{
+flex-grow: 2;
+text-align: center;
+}
+.c-l-tile > div{
+    width: 60%;
+    border: 1px solid #cccccc;
+    height: 5px;
+    margin: 12px auto;
+}
+.c-l > div:hover{
+    cursor: pointer;
+    background: rgba(57,138,202,.7);
+    transition: all .5s;
+    color: white;
+}
+.c-l > div span:nth-child(1){
+    display: inline-flex;
+    justify-content: space-around;
+    width: 80%;
+}
+.c-l > div > span:nth-child(2){
+    display: inline-flex;
+    justify-content: space-between;
+    width: 20%;
+    color: #eeeeee;
+    font-size: 3em;
+}
+.c-l-active{
+    background: rgba(57,138,202,.7);
+    color: white;
+    transition: all .5s;
+}
+.c-r-wrap{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #eeeeee;
+}
+.c-r-wrap > div{
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    top: 40px;
+    bottom: 40px;
+    box-shadow: 0 0 5px #cccccc;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: none;
+}
+.c-r-wrap-active{
+    display: flex !important;
+    flex-direction: column;
+    animation: c-r-wrap-active-show 1s;
+    animation-iteration-count: 1;
+}
+@keyframes c-r-wrap-active-show {
+    0%{
+        opacity: 0;
+        transform: scale(0,0);
+    }
+    100%{
+        opacity: 1;
+        transform: scale(1,1);
+    }
+}
+
+#c-r-u > header{
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    border-bottom: 1px solid #cccccc;
+}
+#c-r-u > header > i{
+    margin-left: 1em;
+    margin-right: 1em;
+    cursor: pointer;
+}
+#c-r-u > header > i:hover{
+    animation-play-state: paused !important;
+}
+#c-r-u > div{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#c-r-u > div > header{
+    text-align: center;
+}
+#c-r-u > div > header > img{
+    width: 128px;
+    height: 128px;
+}
+#c-r-u > div > div{
+    box-shadow: 0 0 3px #ccc;
+    padding: 10px 20px;
+}
+#c-r-u > div > div > p{
+    display: flex;
+    border-bottom: 1px solid #cccccc;
+}
+#c-r-u > div > div > p > span:first-child{
+    width: 400px;
+}
+
+#c-r-s{
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+#c-r-s-wrap{
+    flex: 1;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 50px;
+    max-width: 800px;
+    max-height: 600px;
+}
+#c-r-s-wrap::-webkit-scrollbar{
+    width: 5px;
+}
+#c-r-s-wrap::-webkit-scrollbar-track{
+    border-radius: 2em;
+    background: #eeeeee;
+}
+#c-r-s-wrap::-webkit-scrollbar-thumb{
+    border-radius: 2em;
+    background: rgb(57,138,202);
+}
+
+#c-r-s-wrap > div{
+    width: 33%;
+    max-width: 120px;
+    padding: 40px;
+    border: 1px solid #cccccc;
+    text-align: center;
+    font-size: 2em;
+    cursor: pointer;
+}
+#c-r-s-wrap > div > i{
+    display: block;
+    margin-bottom: 5px;
+}
+#c-r-s-wrap > div:hover{
+    /*background: #f7e1b5;*/
+    background: rgba(117,200,255,.7);
+    box-shadow: 0 0 3px 4px rgba(220,220,230,.7) inset;
+    transition: all 1s;
+    text-shadow: 1px 1px #eee;
+}
+.c-r-s-icon-active{
+    background: #f7e1b5;
+    box-shadow: 0 0 5px 5px #686868 inset;
+}
+
+.c-r-s-panel{
+    position: absolute;
+    width: calc(100% - 70px);
+    height: 100%;
+    right: 70px;
+    visibility: hidden;
+    z-index: -1;
+    background: rgba(220,225,230,.8);
+    display: flex;
+    flex-direction: column;
+}
+.c-r-s-panel-active{
+    visibility: visible !important;
+    transition: all 1s;
+    z-index: initial !important;
+    animation: c-r-s-panel-active-show 1s;
+}
+@keyframes c-r-s-panel-active-show {
+    0%{
+        opacity: 0;
+        transform: translate3d(-100px,0,-100px) rotate3d(0,0,1,-10deg);
+    }
+    100%{
+        opacity: .8;
+        transform: translate3d(0,0,0) rotate3d(0,0,0,0);
+    }
+}
+
+#c-r-s-panel-guests > header,#c-r-s-panel-lottery > header,#c-r-s-panel-vote > header{
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    border-bottom: 1px solid #cccccc;
+}
+#c-r-s-panel-guests > header > i,#c-r-s-panel-lottery > header > i,#c-r-s-panel-vote > header > i{
+    margin-left: 1em;
+    margin-right: 1em;
+    cursor: pointer;
+}
+/*#c-r-s-panel-guests > div,#c-r-s-panel-lottery > div,#c-r-s-panel-vote > div{*/
+    /*flex: 1;*/
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*justify-content: center;*/
+    /*align-items: center;*/
+/*}*/
+
+/*#c-r-s-panel-guests-list{*/
+    /*display: flex;*/
+    /*flex: 1;*/
+    /*justify-content: space-around;*/
+    /*align-items: center;*/
+    /*flex-wrap: wrap;*/
+/*}*/
+#c-r-s-panel-guests > div{
+    display: none;
+}
+#c-r-s-panel-guests-list{
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+#c-r-s-panel-guests-list::-webkit-scrollbar{
+    width: 5px;
+}
+#c-r-s-panel-guests-list::-webkit-scrollbar-track{
+    border-radius: 2em;
+    background: #eeeeee;
+}
+#c-r-s-panel-guests-list::-webkit-scrollbar-thumb{
+    border-radius: 2em;
+    background: rgb(57,138,202);
+}
+#c-r-s-panel-guests-list > div{
+    width: 20%;
+    max-width: 120px;
+    max-height: 120px;
+    border: 1px solid #cccccc;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#c-r-s-panel-guests-list > div > img{
+    display: block;
+    width: 100%;
+    flex: 1;
+}
+#c-r-s-panel-guests-addbtn{
+    padding: 40px 0;
+}
+#c-r-s-panel-guests-addbtn > img{
+    width: 30% !important;
+    flex:0 !important;
+}
+.c-r-s-panel-guests-active{
+    display: flex !important;
+    flex: 1;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+#c-r-s-panel-guests-addnew{
+    flex-direction: column;
+}
+#c-r-s-panel-guests-addnew > p > img{
+    max-width: 120px;
+    max-height: 120px;
+}
+#c-r-s-panel-guests-addnew > p{
+    display: inline-flex;
+    align-items: center;
+}
+#c-r-s-panel-guests-addnew > p > span{
+    margin-right: 5px;
+}

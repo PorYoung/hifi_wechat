@@ -6,14 +6,13 @@ export default class {
         let salt =  crypto.createHash("md5").update(username).digest("hex").substr(6,12);
         password = crypto.createHash("sha1").update(password).digest("hex");
         password = password.substr(0,6) + salt + password.substr(-6);
-        let userinfo = {}
 
         //查询数据库
-        userinfo = await db.user.findOne({username:username})
+        let userinfo = await db.user.findOne({username:username})
         if(userinfo && userinfo.password == password){
             //登陆成功
             req.session.username = username
-            return res.redirect('1')
+            return res.send('1')
         }else{
             //登陆失败
             return res.send('-1')
@@ -23,13 +22,13 @@ export default class {
     static async fn_register(req, res, next) {
         let {username, password} = req.body
         if (!username || !password) {
-            res.send("-1")
+            return res.send("-1")
         } else {
-            let userinfo={}
             //检查用户名是否已存在
-            userinfo = db.user.findOne({username:username})
+            let userinfo = await db.user.findOne({username:username})
             if(userinfo){
                 //用户已存在
+                console.log(userinfo)
                 return res.send('-2')
             }else{
                 //处理password

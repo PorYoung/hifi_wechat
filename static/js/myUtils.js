@@ -1,0 +1,104 @@
+/***************
+*1.0 说明
+*传入参数为二维数组，[
+* ['Hover绑定的标签id','与Hover时间相关的标签id(可省略)','绑定元素中需要修改类的子元素(缺省为 i:first-child)','原来的类名','后来的类名']
+* ]
+*函数执行会在id对应标签中寻找需要修改的子元素并在id标签最后插入子标签span,该标签为'←'图标
+*
+* 待完善(是否要插入span标签，传入参数为对象等)
+ *
+ * 2.0说明
+ * 传入参数为对象
+ * 属性:
+ * activeMenu   活动组，如果您在html初始化一个id为active类，应当传入它相关的参数
+ * idActiveClass    绑定事件的元素上应用的类
+ * id_linkActiveClass   绑定事件的元素相关联的元素
+ * arr          需要绑定事件的元素组
+ *      arr中的数组为['Hover绑定的标签id','与Hover时间相关的标签id(可省略)','绑定元素中需要修改类的子元素(缺省为 i:first-child)','原来的类名','后来的类名']
+ * iconHoverBindInsertBoll  是否在绑定事件的元素中的最后插入子标签span,该标签为'←'图标
+ *iconEventBan  (禁用后会保存在activeMenu等待其他元素事件触发后重新绑定事件，即使设置为false也建议您在extraEvent中手动禁止，避免重复触发事件)
+ *如果不需要为某组元素绑定事件请将第二个参数设为空字符串
+ ***************/
+
+
+    var iconEvent = function (options) {
+    this.settings = {
+        activeMenu: undefined,
+        idActiveClass: undefined,
+        id_linkActiveClass: undefined,
+        arr: undefined,
+        iconHoverBindInsertBool: true,
+        iconEvenBan: true,
+        extraEventAdd: undefined,
+        extraEventRemove: undefined
+    }
+    Object.assign(this.settings,options)
+
+    this.iconClickBind = function () {
+        var that = this
+        this.settings.arr.forEach(function(item){
+            var newItem = item,
+                id = item[0],
+                id_link = item[1],
+                childTag = item[2],
+                class_1 = item[3],
+                class_2 = item[4]
+            if(!!id_link){
+                $(id).click(function () {
+                    if(!!that.settings.activeMenu){
+                        if(that.settings.activeMenu.length < 5 && that.settings.activeMenu.length > 2){
+                            that.settings.activeMenu[4] = that.settings.activeMenu[3]
+                            that.settings.activeMenu[3] = that.settings.activeMenu[2]
+                            that.settings.activeMenu[2] = 'i:first'
+                        }
+                        if(that.settings.idActiveClass) $(that.settings.activeMenu[0]).removeClass(that.settings.idActiveClass)
+                        $(that.settings.activeMenu[0] + ' ' + childTag).removeClass(that.settings.activeMenu[4]).addClass(that.settings.activeMenu[3])
+                        if(that.settings.iconHoverBindInsertBool) $(that.settings.activeMenu[0] + ' span:last-child').remove()
+                        if(that.settings.id_linkActiveClass) $(that.settings.activeMenu[1]).removeClass(that.settings.id_linkActiveClass)
+
+                        if(!!that.settings.extraEventRemove) that.settings.extraEventRemove(that.settings.activeMenu[0],that.settings.activeMenu[1])
+
+                        that.settings.arr = []
+                        that.settings.arr.push(that.settings.activeMenu)
+                        that.iconHoverBind()
+                        that.iconClickBind()
+                    }
+                    if(!!that.settings.idActiveClass) $(this).addClass(that.settings.idActiveClass)
+                    if(!!that.settings.id_linkActiveClass) $(id_link).addClass(that.settings.id_linkActiveClass)
+                    $(id + ' ' + childTag).removeClass(class_1).addClass(class_2)
+                    //鼠标尚未移出已删除事件，因此mouseleave未被触发
+                    if(that.settings.iconEvenBan){
+                        $(id).off()
+                        that.settings.activeMenu = newItem
+                    }
+                    if(!!that.settings.extraEvent) that.settings.extraEvent(id,id_link,that)
+                })
+            }
+        })
+        return that
+    }
+    this.iconHoverBind = function () {
+        var that = this
+        this.settings.arr.forEach(function(item){
+            if(item.length < 5 && item.length > 2){
+                item[4] = item[3]
+                item[3] = item[2]
+                item[2] = 'i:first'
+            }
+            if(!!item[3] && !!item[4]){
+                var id =item[0],
+                    childTag=item[2],
+                    class_1=item[3],
+                    class_2=item[4]
+                $(id).mouseenter(function(){
+                    $(id+' '+ childTag).removeClass(class_1).addClass(class_2)
+                    if(that.settings.iconHoverBindInsertBool) $(id).append('<span><i></i><i class="fa fa-caret-left"></i></span>')
+                }).mouseleave(function(){
+                    $(id+' '+ childTag).removeClass(class_2).addClass(class_1)
+                    if(that.settings.iconHoverBindInsertBool) $(id + ' span:last-child').remove()
+                })
+            }
+        })
+        return that
+    }
+}

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="/static/css/console.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <title>console</title>
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/myUtils.js"></script>
+    <script>
+        $(($)=>{
+            const iconEventArr = [['#userInfo','#c-r-u','fa-user','fa-user-o'],
+                ['#interface','#c-r-i','fa-object-ungroup','fa-object-group'],
+                ['#setting','#c-r-s','fa-toggle-off','fa-toggle-on'],
+                ['#data','#c-r-d','fa-bar-chart','fa-pie-chart'],
+                ['#control','#c-r-c','fa-stethoscope','fa-wrench']
+            ]
+            const settingIconArr = [
+                ['#c-r-s-guests','#c-r-s-panel-guests','fa-user-circle-o','fa-user-circle'],
+                ['#c-r-s-vote','#c-r-s-panel-vote','fa-bar-chart','fa-line-chart'],
+                ['#c-r-s-lottery','#c-r-s-panel-lottery','fa-gift','fa-smile-o'],
+                ['#c-r-s-guests2','#c-r-s-panel-guests2','fa-user-circle-o','fa-user-circle'],
+                ['#c-r-s-vote2','#c-r-s-panel-vote2','fa-bar-chart','fa-line-chart'],
+                ['#c-r-s-lottery2','#c-r-s-panel-lottery2','fa-gift','fa-smile-o']
+            ]
+            var menuEvent = new iconEvent({
+                idActiveClass: 'c-l-active',
+                id_linkActiveClass: 'c-r-wrap-active',
+                arr: iconEventArr
+            }).iconClickBind().iconHoverBind()
+            var addIconAnim = function (eleid,linkid) {
+                $(eleid).parent().css({
+                    'overflow-x':'hidden',
+                    'position':'absolute',
+                    padding:0
+                }).animate({
+                    opacity:'.7',
+                    width:'70px',
+                    right:'0'
+                },1000).children().css({'font-size':'1em'})
+            }
+            var removeIconAnim = function (eleid,linkid) {
+
+            }
+            var settingIconEvent = new iconEvent({
+                arr: settingIconArr,
+                idActiveClass: 'c-r-s-icon-active',
+                id_linkActiveClass: 'c-r-s-panel-active',
+                iconHoverBindInsertBool:false,
+                extraEvent: addIconAnim
+            }).iconClickBind().iconHoverBind()
+
+            var guestsIconBackArr = [
+                ['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','',''],
+                ['#c-r-s-panel-guests-panel-back','#c-r-s-panel-guests-list','','']
+            ]
+            var guestsIconBackEvent = new iconEvent({
+                arr:guestsIconBackArr,
+                idActiveClass:'c-r-s-panel-guests-active',
+                id_linkActiveClass:'c-r-s-panel-guests-active',
+                iconHoverBindInsertBool:false,
+                activeMenu:['#c-r-s-panel-guests-list','','','']
+            }).iconHoverBind().iconClickBind()
+
+            var guestsIconSaveArr = [
+                ['#c-r-s-panel-guests-panel-save','#c-r-s-panel-guests-list','','']
+            ]
+            var guestsIconSaveEvent = new iconEvent({
+                arr:guestsIconSaveArr,
+                idActiveClass:'c-r-s-panel-guests-active',
+                id_linkActiveClass:'c-r-s-panel-guests-active',
+                iconHoverBindInsertBool:false,
+                activeMenu:['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','',''],
+                extraEventRemove: function (id,id_link) {
+                    if(id == '#c-r-s-panel-guests-addbtn') {
+                        /*向服务器发送请求，判断是否保存成功，成功返回1，失败返回-1
+                        /*
+                        /*
+                        /*
+                        */
+                        var html = `<div>
+                            <img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}">
+                        </div>`
+                        $('#c-r-s-panel-guests-addnew-avatar').attr({
+                            src:'/static/image/avatar_default.jpg'
+                        })
+                        $('#c-r-s-panel-guests-addnew-guestName').val('')
+                        $('#c-r-s-panel-guests-addnew-guestTitle').val('')
+                        $('#c-r-s-panel-guests-addnew-guestIntroduction').val('')
+                        $('#c-r-s-panel-guests-list div:last-child').prev().after(html)
+                    }
+                }
+            }).iconClickBind().iconHoverBind()
+        })
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="c-l">
+        <header class="c-l-tile">
+            <img src="/static/image/logo.png">
+            <br>
+            <span>welcome <%= username %> to HI-FI</span>
+            <br>
+            <a href="./wall/screen" style="color: #eeeeee;border-radius: 1em;background: #31b0d5;text-decoration: none;padding: 2px 5px;display: block;width: 40px;margin: 5px auto">启动</a>
+            <div></div>
+        </header>
+        <div id="userInfo">
+            <span>
+                UserInfo<i class="fa fa-user" aria-hidden="true"></i>
+            </span>
+        </div>
+        <div id="interface">
+            <span>
+                界面设计<i class="fa fa-object-ungroup" aria-hidden="true"></i>
+            </span>
+        </div>
+        <div id="setting">
+            <span>
+                功能选择<i class="fa fa-toggle-off" aria-hidden="true"></i>
+            </span>
+        </div>
+        <div id="data">
+            <span>
+                活动数据<i class="fa fa-bar-chart" aria-hidden="true"></i>
+            </span>
+        </div>
+        <div id="control">
+            <span>
+            活动监控<i class="fa fa-stethoscope" aria-hidden="true"></i>
+            </span>
+        </div>
+    </div>
+    <div class="c-r">
+        <div class="c-r-wrap">
+            <div id="c-r-u">
+                <header><i class="fa fa-cog fa-spin"></i>用户信息</header>
+                <div>
+                    <header>
+                        <img src="/static/image/u_logo.ico">
+                        <p>LOGO</p>
+                    </header>
+                    <div>
+                        <p><span>username:</span><span><%= username %></span></p>
+                        <p><span>other information:</span><span>Hi</span></p>
+                        <p><span>other information:</span><span>Hello</span></p>
+                        <p><span>other information:</span><span>yeah!</span></p>
+                        <p><span>shortcut:</span></p>
+                    </div>
+                </div>
+            </div>
+            <div id="c-r-i">
+
+            </div>
+            <div id="c-r-s">
+                <div id="c-r-s-wrap">
+                    <div id="c-r-s-guests">
+                        <i class="fa fa-user-circle-o"></i>
+                        <span>来宾</span>
+                    </div>
+                    <div id="c-r-s-vote">
+                        <i class="fa fa-bar-chart"></i>
+                        <span>投票</span>
+                    </div>
+                    <div id="c-r-s-lottery">
+                        <i class="fa fa-gift"></i>
+                        <span>彩蛋</span>
+                    </div>
+                    <div id="c-r-s-guests2">
+                        <i class="fa fa-user-circle-o"></i>
+                        <span>来宾</span>
+                    </div>
+                    <div id="c-r-s-vote2">
+                        <i class="fa fa-bar-chart"></i>
+                        <span>投票</span>
+                    </div>
+                    <div id="c-r-s-lottery2">
+                        <i class="fa fa-gift"></i>
+                        <span>彩蛋</span>
+                    </div>
+                </div>
+                <div id="c-r-s-panel-guests" class="c-r-s-panel">
+                    <header><i class="fa fa-toggle-off"></i>来宾设置</header>
+                    <div id="c-r-s-panel-guests-list" class="c-r-s-panel-guests-active">
+                        <div>
+                            <img src="/static/image/1.jpg" title="PorYoung">
+                        </div>
+                        <div id="c-r-s-panel-guests-addbtn">
+                            <img src="/static/image/add_icon.ico" title="添加">
+                        </div>
+                    </div>
+                    <div id="c-r-s-panel-guests-show">
+                        <!--<span id="c-r-s-panel-guests-panel-back" style="color: #eeeeee;border-radius: 1em;background: #31b0d5;text-decoration: none;padding: 2px 5px;display: block;width: 40px;margin: 5px auto">返回</span>-->
+                    </div>
+                    <div id="c-r-s-panel-guests-addnew">
+                        <p><span>&nbsp;&nbsp;&nbsp;</span><img src="/static/image/avatar_default.jpg" id="c-r-s-panel-guests-addnew-avatar"></p>
+                        <p><span>名称:</span><input name="guestName" id="c-r-s-panel-guests-addnew-guestName"></p>
+                        <p><span>头衔:</span><input name="guestTitle" id="c-r-s-panel-guests-addnew-guestTitle"></p>
+                        <p><span>介绍:</span><textarea name="guestIntroduction" rows="5" id="c-r-s-panel-guests-addnew-guestIntroduction"></textarea></p>
+                        <p>
+                            <span id="c-r-s-panel-guests-panel-save" style="color: #eeeeee;border-radius: 1em;background: #31b0d5;padding: 2px 5px;display: block;cursor:pointer;">保存</span>
+                            <span id="c-r-s-panel-guests-panel-back" style="color: #eeeeee;border-radius: 1em;background: #31b0d5;padding: 2px 5px;display: block;margin-left: 5px;cursor:pointer;">返回</span>
+                        </p>
+                    </div>
+                </div>
+                <div id="c-r-s-panel-vote" class="c-r-s-panel">
+                    <header><i class="fa fa-toggle-off"></i>投票设置</header>
+                    <div>
+
+                    </div>
+                </div>
+                <div id="c-r-s-panel-lottery" class="c-r-s-panel">
+                    <header><i class="fa fa-toggle-off"></i>彩蛋设置</header>
+                    <div>
+
+                    </div>
+                </div>
+                <div id="c-r-s-panel-guests2" class="c-r-s-panel"></div>
+                <div id="c-r-s-panel-vote2" class="c-r-s-panel"></div>
+                <div id="c-r-s-panel-lottery2" class="c-r-s-panel"></div>
+            </div>
+            <div id="c-r-d">
+
+            </div>
+            <div id="c-r-c">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
