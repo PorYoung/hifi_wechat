@@ -57,6 +57,8 @@ html body{
 }
 #liveSubtitle > div > span{
     flex: 1;
+    display: inline-flex;
+    align-items: center;
 }
 @keyframes live-subtitle-show {
     0%{

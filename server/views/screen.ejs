@@ -87,7 +87,7 @@
     </script>
     <script>
         Vue.component('live-subtitle',{
-            template:'<div v-html="msg.content"><img :src="msg.headimgurl">{{ msg.content }}</div>',
+            template:'<div><img :src="msg.headimgurl"><span v-html="msg.content">{{ msg.content }}</span></div>',
             props:['msg']
         })
         Vue.component('message-show',{
