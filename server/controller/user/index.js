@@ -25,11 +25,7 @@ export default class {
             return res.send("-1")
         } else {
             //检查用户名是否已存在
-<<<<<<< HEAD
             let userinfo = await db.user.findOne({username:username})
-=======
-            userinfo = await db.user.findOne({username:username})
->>>>>>> origin/allChat
             if(userinfo){
                 //用户已存在
                 console.log(userinfo)

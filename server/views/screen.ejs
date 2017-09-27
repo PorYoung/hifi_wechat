@@ -79,7 +79,7 @@
             <!--此处应可设置用户头像显示的方式，默认方形-->
             <header><img :src="msg.headimgurl"></header>
             <div>
-                <span>{{ msg.nickname }}</span>
+                <span>{{ msg.from }}</span>
                 <span v-html="msg.content">{{ msg.content }}</span>
             </div>
             <footer><i class="fa fa-hand-o-right"></i></footer>
