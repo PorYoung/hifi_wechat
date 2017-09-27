@@ -60,6 +60,9 @@ html body{
     display: inline-flex;
     align-items: center;
 }
+#liveSubtitle > div > span > img{
+    border-radius: 50%;
+}
 @keyframes live-subtitle-show {
     0%{
         right: -100%;
