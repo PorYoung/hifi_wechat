@@ -2,7 +2,7 @@ import https from 'https'
 import fs from 'fs'
 import path from 'path'
 let config = {
-    prefix: 'https://api.weixin.qq.com/cgi-bin/token?',
+    prefix: 'https://api.weixin.qq.com/cgi-bin/',
     appID: 'wxfe86c090e3d88f8c',
     appSecret: '83ce792f93bab7df544fecae73725859',
     access_token: '',
@@ -30,7 +30,8 @@ export default class Wechat {
     }
 
     async ReachAccessToken(type) {
-        const url = `${config.prefix}grant_type=client_credential&appid=${config.appID}&secret=${config.appSecret}`
+        const url = `${config.prefix}token?grant_type=client_credential&appid=${config.appID}&secret=${config.appSecret}`
+        let that = this
         let data = await this.getAccessTokenSync(url).catch(err =>
             console.log(err)
         )
@@ -43,8 +44,21 @@ export default class Wechat {
             config.access_token = data.access_token
             config.expires_in = new Date().getTime() + data.expires_in * 1000
             this.isAccessTokenValid(data) ?
-                fs.writeFile(path.join(__dirname, '/../access_token.txt'), JSON.stringify(data), (err) => {
+                fs.writeFile(path.join(__dirname, '/../access_token.txt'), JSON.stringify(data), async (err) => {
                     err && console.log(err)
+                    let jsApiUrl = `${config.prefix}ticket/getticket?access_token=${data.access_token}&type=jsapi`
+                    let ticket = await that.getAccessTokenSync(jsApiUrl).catch(err =>
+                        console.log(err)
+                    )
+                    try {
+                        ticket = JSON.parse(ticket)
+                        console.log(ticket)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                    fs.writeFile(path.join(__dirname, '/../jsapi_ticket.txt'), JSON.stringify(ticket), (err) => {
+                        err && console.log(err)
+                    })
                 }) :
                 this.updateAccessToken(opts)
         } else {

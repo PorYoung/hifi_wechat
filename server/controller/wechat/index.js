@@ -4,6 +4,9 @@ import template from '../../model/wechatResponse'
 import https from 'https'
 import config from '../../../config/wechat'
 
+// const wechat = new Wechat(config)
+// wechat.setIntervalGet()
+
 let user = {
     info: {}
 }

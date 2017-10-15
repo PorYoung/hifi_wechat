@@ -1,3 +1,7 @@
+import config from '../../../config/wechat'
+import fs from 'fs'
+import path from 'path'
+import sha1 from 'sha1'
 const findByPagination = async(criterion, limit, page, callback) => {
     db.message
         .where(criterion)
@@ -34,6 +38,15 @@ const findByPaginationAsync = page => {
     })
 }
 
+const readFileSync = dir => {
+    return new Promise((resolve,reject) => {
+        fs.readFile(path.join(__dirname,dir),(err,data) => {
+            if(err) reject(err)
+            else resolve(data)
+        })
+    })
+}
+
 export default class {
     static async allchat(req, res, next) {
         //读取数据库
@@ -42,9 +55,28 @@ export default class {
         })
         //存在该用户
         if (userinfo) {
+            //生成signature签名
+            let nonceStr = config.token
+            let ticket = await readFileSync('/../../jsapi_ticket.txt').catch(err => 
+                console.log(err)
+            )
+            try {
+                ticket = JSON.parse(ticket.toString()).ticket
+            } catch (error) {
+                console.log(error)
+            }
+            let timestamp = new Date().getTime()
+            let jsapi_url = config.urlPrefix+'/allChat?openid='+req.session.openid
+            let str = `jsapi_ticket=${ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${jsapi_url}`
+            let signature = sha1(str)
+
             return res.render('allChat', {
                 nickname: userinfo.nickname,
-                headimgurl: userinfo.headimgurl
+                headimgurl: userinfo.headimgurl,
+                appId: config.appID,
+                timestamp: timestamp,
+                nonceStr: config.token,
+                signature: signature,
             })
         } else {
             //返回错误:重新登录
