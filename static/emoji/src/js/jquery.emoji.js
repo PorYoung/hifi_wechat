@@ -151,7 +151,7 @@
                         insertHtml;
                     if (target === $(btn)[0]) {
                         $('#emoji_container_' + ix)[that.toggleFunc]();
-                        that.$content.focus();
+                        // that.$content.focus();
                     } else if ($(target).parents('#emoji_container_' + ix).length > 0) {
                         code = $(target).data('emoji_code') || $(target).parent().data('emoji_code');
                         tab = $(target).data('emoji_tab');
@@ -183,10 +183,10 @@
                                 pageIndex++;
                             }
                         }
-                        that.$content.focus();
+                        // that.$content.focus();
                     } else if ($('#emoji_container_' + ix + ':visible').length > 0) {
                         that.hide();
-                        that.$content.focus();
+                        // that.$content.focus();
                     }
                 }
             });
