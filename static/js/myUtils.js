@@ -102,3 +102,24 @@
         return that
     }
 }
+
+    //定义函数：使用消息模板
+    var messageBoxCompiled = function messageBoxCompiled(msg,position){
+        position = position?position:"left";
+        var messageBox = !!msg.MsgType&&msg.MsgType=="image"?'<div class="message-list message-list-left"><img src="<{= msg.headimgurl }>" class="avatar"/><em class="list-group-item-heading"><{= msg.from }></em> <div class="list-group-item"> <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i><p class="list-group-item-text"><img src="<{= msg.mediaId }>" data-imgurl="<{= msg.mediaId }>" class="weixinServerImage"></p></div></div>':'<div class="message-list message-list-left"><img src="<{= msg.headimgurl }>" class="avatar"/><em class="list-group-item-heading"><{= msg.from }></em> <div class="list-group-item"> <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i> <p class="list-group-item-text"><{= msg.content }></p></div></div>'
+        if(position === "right"){
+            //右
+            messageBox = messageBox.replace(/left/g,"right").replace(/(<img.+\/>)(<em.+<\/em>)/,"$2$1")   
+        }
+        var compiled = _.template(messageBox);
+        return compiled({msg});
+    }
+    //定义函数：显示通知框
+    var showNotification = function showNotification(text){
+        $("#notification").html(text).show("fast");
+                setTimeout(function () {
+                    $("#notification").html("").hide("fast");
+                },3000);
+    }
+    //处理socket通信
+    var allChat = io("/allChat");

@@ -6,10 +6,10 @@ const messageSchema = new mongoose.Schema({
   headimgurl : String,
   date : String,
   //消息类型
-  MSgType : String,
+  MsgType : String,
   content : String,
   //微信提供的用于获取资源的media_id
-  media_id : String
+  mediaId : String
 })
 const message = mongoose.model('message', messageSchema)
 export default message

@@ -62,3 +62,7 @@ Object{
                             </div>
                             <footer><i class="fa fa-hand-o-right"></i></footer>
                         </div>
+
+6.增加图片上传
+    存储在static/image/message
+    common/utils下的工具包需要优化

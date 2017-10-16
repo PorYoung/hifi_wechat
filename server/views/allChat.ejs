@@ -211,6 +211,36 @@
             width: 1.5em;
             vertical-align: bottom;
         }
+        #plusPanel{
+            display: none;
+            position: absolute;
+            bottom: 50px;
+            font-size: 2em;
+            color: #31b0d5;
+            left: 0;
+            right: 0;
+        }
+        #plusPanel > i{
+            width: 2.2em;
+        }
+        .plusPanelShow{
+            display: flex !important;
+            opacity: .7 !important;
+            justify-content: center;
+            align-self: center;
+        }
+        .weixinLocalImage,.weixinServerImage{
+            border-top-right-radius: 10px;
+            width: 60%;
+        }
+        .weixinLocalImage{
+            border: 1px solid rgba(32, 187, 14, 0.7);
+        }
+        .imageUnUpload{
+            opacity: .5;
+            filter: blur(1px);
+            border: 1px solid rgb(112, 22, 28)
+        }
     </style>
 </head>
 <body oncontextmenu="return false;" style="height:100vh">
@@ -223,7 +253,10 @@
 <!--消息发送框-->
 <div class="input-group" id="inputBox">
     <span class="input-group-btn">
-        <button class="btn btn-default" id="emojiBtn" type="button">😊</button>
+        <div>
+            <button class="btn btn-default" id="emojiBtn" type="button">😊</button>
+            <button class="btn btn-default" id="plusBtn" type="button">➕</button>
+        </div>
     </span>
     <!--<input type="text" class="form-control" id="inputText" placeholder="Search for...">-->
     <div contenteditable="true" class="form-control" id="inputText"></div>
@@ -231,6 +264,11 @@
     <span class="input-group-btn">
         <button class="btn btn-default" id="sendBtn" type="button">Go!</button>
     </span>
+</div>
+<!--功能键-->
+<div id="plusPanel">
+    <i class="fa fa-photo" id="wexinImage" aria-hidden="true"></i>
+    <i class="fa fa-bar-chart" aria-hidden="true"></i>
 </div>
 <!--通知-->
 <div id="notification"></div>
@@ -257,7 +295,11 @@
         <img src="<{= data[i].headimgurl }>" class="avatar"/><em class="list-group-item-heading"><{= data[i].from }></em>
         <div class="list-group-item">
             <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i>
+            <{ if(!!data[i].MsgType && data[i].MsgType == "image"){ }>
+            <p class="list-group-item-text"><img src="<{= data[i].mediaId }>" data-imgurl="<{= data[i].mediaId }>" class="weixinServerImage"></p>
+            <{ }else{ }> 
             <p class="list-group-item-text"><{= data[i].content }></p>
+            <{ } }>
         </div>
     </div>
     <{ }else { }>
@@ -265,7 +307,12 @@
         <em class="list-group-item-heading"><%= nickname %></em><img src="<{= data[i].headimgurl }>" class="avatar"/>
         <div class="list-group-item">
             <i style="position: absolute" class="glyphicon glyphicon-menu-right"></i>
+            <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i>
+            <{ if(!!data[i].MsgType && data[i].MsgType == "image"){ }>
+            <p class="list-group-item-text"><img src="<{= data[i].mediaId }>" data-imgurl="<{= data[i].mediaId }>" class="weixinServerImage"></p>
+            <{ }else{ }> 
             <p class="list-group-item-text"><{= data[i].content }></p>
+            <{ } }>
         </div>
     </div>
     <{ } }>
@@ -273,26 +320,9 @@
 </script>
 <!--聊天系统前端业务逻辑-->
 <script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/myUtils.js"></script>
 <script>
     $(function ($) {
-        //定义函数：显示通知框
-        function showNotification(text){
-            $("#notification").html(text).show("fast");
-                    setTimeout(function () {
-                        $("#notification").html("").hide("fast");
-                    },3000);
-        }
-        //定义函数：使用消息模板
-        function messageBoxCompiled(msg,position){
-            position = position?position:"left";
-            var messageBox = '<div class="message-list message-list-left"><img src="<{= msg.headimgurl }>" class="avatar"/><em class="list-group-item-heading"><{= msg.from }></em> <div class="list-group-item"> <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i> <p class="list-group-item-text"><{= msg.content }></p></div></div>'
-            if(position === "right"){
-                //右
-                messageBox = messageBox.replace(/left/g,"right").replace(/(<img.+\/>)(<em.+<\/em>)/,"$2$1")   
-            }
-            var compiled = _.template(messageBox);
-            return compiled({msg});
-        }
     //读取allChat消息
         //0未加载 1加载完成 2无更多消息
         var loadMessageFlag = 0;
@@ -306,6 +336,8 @@
                     loadMessageFlag = 2;
                 }else{
                     var compiled = _.template($("#message-template").html());
+                    //对图片消息进行处理
+
                     $("#listPanel").prepend(compiled({data}));
                     //发出加载成功信号
                     loadMessageFlag = 1;
@@ -460,7 +492,7 @@
         }
         myTouchEvent();
         //socket.io
-        var allChat = io("/allChat");
+        // var allChat = io("/allChat");
         allChat.on("connect", function(){
             allChat.emit("notification", {from:"<%= nickname %>", content: "new connection"})  
         })
@@ -535,6 +567,21 @@
             // $('#inputText').blur();
         })
         
+        $('body').on({
+            'click':function(e){
+                var target = e.target;
+                if(target == $("#plusBtn")[0]){
+                    $("#plusPanel").css({
+                        display:'flex',
+                        opacity:'0'
+                    }).addClass('plusPanelShow');
+                }else{
+                    $("#plusPanel").removeClass('plusPanelShow').css({
+                        display: 'none'
+                    });
+                }
+            }
+        })
     })
 
 </script>
@@ -565,11 +612,62 @@
              'uploadImage',
              'downloadImage',
              'getLocalImgData'
-         ],
-        success: function (res) {
-            alert.log(JSON.stringify(res));
-        }
-    })
+            ],
+            success: function (res) {
+                console.log(JSON.stringify(res));
+            }
+        })
+
+        //图片接口
+        //拍照、本地选图
+        var images = {
+            localId: [],
+            serverId: [],
+            date:null
+        };
+        $("#wexinImage").click(function(event){
+            wx.chooseImage({
+                count: 1,
+                success: function (res) {
+                    images.localId = res.localIds;
+                    if (images.localId.length == 0) return;      
+                    images.date = new Date().getTime()             
+                    var msg = {
+                        from: "<%= nickname %>",
+                        content: '<img src="'+images.localId[0]+'" id="weixinLocalImage'+images.date+'" data-imgurl="'+images.localId[0]+'" class="imageUnUpload weixinLocalImage">',
+                        headimgurl: "<%= headimgurl %>"
+                    }
+                    $("#listPanel").append(messageBoxCompiled(msg,"right"));
+                    var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
+                    $("#listPanel").animate({scrollTop: scrollHeight}, 300);
+                    var i = 0, length = images.localId.length;
+                    images.serverId = [];
+                    function upload() {
+                        wx.uploadImage({
+                            localId: images.localId[i],
+                            success: function (res) {
+                                let id = '#weixinLocalImage'+images.date
+                                $(id).removeClass('imageUnUpload');
+                                showNotification('上传成功');
+                                images.serverId.push(res.serverId);
+                                msg.MsgType = 'image';
+                                msg.content = '';
+                                msg.mediaId = images.serverId[0];
+                                allChat.emit("public_message", msg);
+                            },
+                            fail: function (res) {
+                                showNotification('上传失败：'+JSON.stringify(res));
+                            }
+                        });
+                    }
+                    upload();
+
+                    //内容为空则返回
+                    if(!msg.content) return;
+                    allChat.emit("public_message", msg);
+                }
+            });
+        })
 })
 </script>
 </body>

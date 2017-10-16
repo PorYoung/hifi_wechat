@@ -1,6 +1,5 @@
 import config from '../../../config/wechat'
-import fs from 'fs'
-import path from 'path'
+import utils from '../../common/utils'
 import sha1 from 'sha1'
 const findByPagination = async(criterion, limit, page, callback) => {
     db.message
@@ -38,15 +37,6 @@ const findByPaginationAsync = page => {
     })
 }
 
-const readFileSync = dir => {
-    return new Promise((resolve,reject) => {
-        fs.readFile(path.join(__dirname,dir),(err,data) => {
-            if(err) reject(err)
-            else resolve(data)
-        })
-    })
-}
-
 export default class {
     static async allchat(req, res, next) {
         //读取数据库
@@ -57,7 +47,7 @@ export default class {
         if (userinfo) {
             //生成signature签名
             let nonceStr = config.token
-            let ticket = await readFileSync('/../../jsapi_ticket.txt').catch(err => 
+            let ticket = await utils.readFileSync('/../../jsapi_ticket.txt').catch(err => 
                 console.log(err)
             )
             try {

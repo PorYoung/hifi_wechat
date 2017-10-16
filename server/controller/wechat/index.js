@@ -1,32 +1,14 @@
 import sha1 from 'sha1'
 import Wechat from '../../model/wechatApi'
 import template from '../../model/wechatResponse'
-import https from 'https'
+import utils from '../../common/utils'
 import config from '../../../config/wechat'
 
-// const wechat = new Wechat(config)
-// wechat.setIntervalGet()
+const wechat = new Wechat(config)
+wechat.setIntervalGet()
 
 let user = {
     info: {}
-}
-
-const httpsGetJSON = url => {
-    return new Promise((resolve, reject) => {
-        https.get(url, res => {
-            res.on('data', data => {
-                let result
-                try {
-                    result = JSON.parse(data)
-                } catch (error) {
-                    error && console.log(error)
-                    reject(error)
-                }
-                resolve(result)
-            })
-            res.on('err', err => reject(err))
-        })
-    })
 }
 
 export default class {
@@ -111,7 +93,7 @@ export default class {
         const code = req.query.code
         console.log("code:" + code)
         let url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${config.appID}&secret=${config.appSecret}&code=${code}&grant_type=authorization_code`
-        let data = await httpsGetJSON(url).catch(err => console.log(err))
+        let data = await utils.httpsGetJSON(url).catch(err => console.log(err))
         console.log("正在处理微信用户验证")
         console.log(data)
         if (!data.access_token) {
@@ -124,7 +106,7 @@ export default class {
         }
         //拉取用户信息，存入用户数据库中
         url = `https://api.weixin.qq.com/sns/userinfo?access_token=${user.info.access_token}&openid=${user.info.openid}&lang=zh_CN`
-        data = await httpsGetJSON(url).catch(err => console.log(err))
+        data = await utils.httpsGetJSON(url).catch(err => console.log(err))
         console.log("正在拉取用户信息")
         console.log(data)
         Object.assign(user.info, data)
@@ -166,4 +148,7 @@ export default class {
         return res.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/api/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
     }
 
+    async get_wechatImage(id){
+        let url = `https://api.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID`
+    }
 }
