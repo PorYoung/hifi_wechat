@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link href="/static/css/screen.css" rel="stylesheet">
     <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/carousel/css/style.css" rel="stylesheet">
     <title>screen</title>
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/myUtils.js"></script>
 </head>
 <body>
+    
     <!--背景绘制-->
     <div id="background" style="position: absolute;left: 0;right: 0;top: 0;bottom: 0;"></div>
     <script src="/static/js/jquery-starfield.js"></script>
@@ -25,7 +27,24 @@
                 <div id="w-message" class="wallCon-active">
                     <message-show v-for="msg in messageArr" :msg="msg"></message-show>
                 </div>
-                <div id="w-image"></div>
+                <div id="w-image" v-on:click="imageClickDispatch">
+                    <div class="slider" id="slider" style="--img-prev:url(/static/image/message/6DPsQyJviLDVd1T_Ee2YbJ4-yKdl_fj8iL_sqyxT8xaOn-7WdqFKW7L7cvPMyEk3.jpg)"> 
+                        <div class="slider__content" id="slider-content">
+                            <div class="slider__images">
+                                <image-show v-for="(msg,index) in imageData" :msg="msg" :index="index" :data-id="index + 1"></image-show>
+                            </div>
+                            <div class="slider__text">
+                                <image-info-show v-for="(msg,index) in imageData" :msg="msg" :index="index" :data-id="index + 1"></image-info-show>
+                            </div>
+                        </div>
+                        <div class="slider__nav">
+                            <div class="slider__nav-arrows">
+                                <div class="slider__nav-arrow slider__nav-arrow--left" id="left">to left</div>
+                                <div class="slider__nav-arrow slider__nav-arrow--right" id="right">to right</div>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
                 <div id="w-guests"></div>
                 <div id="w-vote"></div>
                 <div id="w-lottery"></div>
@@ -46,9 +65,11 @@
         </div>
         <!--弹幕-->
         <div id="liveSubtitle" v-if="liveSubtitleSeen">
-            <live-subtitle v-for="(msg,index) in liveSubtitleArr" :msg="msg" :id="'liveSubtitle-'+index" :style="'top:'+ msg.cssTop +'px;animation-delay:'+ msg.cssAnimationDelay +'s;'"></live-subtitle>
-        </div>
+            <live-subtitle v-for="(msg,key) in liveSubtitleArr" :msg="msg" :id="'liveSubtitle-'+key" :style="'top:'+ msg.cssTop +'px;animation-delay:'+ msg.cssAnimationDelay +'s;'"></live-subtitle>
+        </div> 
     </div>
+    
+   
     <script>
         $(function ($) {
             $("#background").starfield({
@@ -74,7 +95,7 @@
         })
     </script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/vue.js"></script>
     <script type="text/x-template" id="message-template">
         <div>
             <!--此处应可设置用户头像显示的方式，默认方形-->
@@ -86,7 +107,29 @@
             <footer><i class="fa fa-hand-o-right"></i></footer>
         </div>
     </script>
-    <script>
+    <script type="text/x-template" id="image-template">
+        <div v-if="index == 0" class="slider__images-item slider__images-item--active"><img :src="msg.mediaId"/></div>
+        <div v-else class="slider__images-item"><img :src="msg.mediaId"/></div>
+    </script>
+    <script type="text/x-template" id="image-info-template">
+        <div v-if="index == 0" class="slider__text-item slider__text-item--active">
+            <div class="slider__text-item-head">
+                <h3>{{msg.from}}</h3>
+            </div>
+            <div class="slider__text-item-info">
+            <p>“And into the forest I go, to lose my mind and find my soul”</p>
+            </div>
+        </div>
+        <div v-else class="slider__text-item">
+            <div class="slider__text-item-head">
+                <h3>{{msg.from}}</h3>
+            </div>
+            <div class="slider__text-item-info">
+            <p>“And into the forest I go, to lose my mind and find my soul”</p>
+            </div>
+        </div>
+    </script>
+   <script>
         Vue.component('live-subtitle',{
             template:'<div style="overflow:visible;"><img :src="msg.headimgurl" style="margin-left:-5px;margin-right:5px;width:40px;height:40px;" ><span v-html="msg.content">{{ msg.content }}</span></div>',
             props:['msg']
@@ -95,10 +138,19 @@
             template:'#message-template',
             props:['msg']
         })
+        Vue.component('image-show',{
+            template:"#image-template",
+            props:['msg','index']
+        })
+        Vue.component('image-info-show',{
+            template:"#image-info-template",
+            props:['msg','index']
+        })
         var vm = new Vue({
             el:'#app',
             data:{
                 liveSubtitleData:[],
+                imageData:[],
                 liveSubtitleArr:[],
                 liveSubtitleCount:0,
                 messageArr:[],
@@ -107,7 +159,8 @@
                 intervalGetSubtitleTimer:undefined,
                 intervalMoveTimer:undefined,
                 intervalChangeTimer:undefined,
-                intervalGetMessageTimer:undefined
+                intervalGetMessageTimer:undefined,
+                host:window.location.host
             },
             watch: {
                 liveSubtitleArr: function (newarr) {
@@ -132,6 +185,9 @@
                 },
             },
             methods:{
+                imageClickDispatch:function(){
+                    this.$emit('imageClickDispatch')
+                },
                 randomValue:function (times) {
                     times = times || 1
                     return Math.floor(Math.random() * 10 + 1) * times
@@ -186,8 +242,15 @@
                     console.log('[初始化数据:数据库为空]')
                 }else{
                     data.forEach(function(item){
+                        //判断是图片还是消息
+                    if(!!item.MsgType&&item.MsgType=="image"){
+                        vm.imageData.push(item)
+                        console.log("[新图片入库|total:"+vm.imageData.length+"]")
+                    }else{
                         vm.liveSubtitleData.push(item)
-                    })
+                        console.log("[新消息入库|total"+vm.liveSubtitleData.length+"]")
+                    }
+                })
                     vm.liveSubtitleSeen = true
                     vm.intervalGetMessage()
                     vm.intervalGetSubtitle()
@@ -207,8 +270,14 @@
             if(vm.liveSubtitleData.length > 100){
                 vm.liveSubtitleData.splice(0,10)
             }
-            vm.liveSubtitleData.push(msg)
-            console.log("新数据入库")
+            //判断是图片还是消息
+            if(!!msg.MsgType&&msg.MsgType=="image"){
+                vm.imageData.push(msg)
+                console.log("[新图片入库|total:"+vm.imageData.length+"]")
+            }else{
+                vm.liveSubtitleData.push(msg)
+                console.log("[新消息入库|total"+vm.liveSubtitleData.length+"]")
+            }
             if(vm.liveSubtitleArr.length < 5) {
                 vm.intervalGetSubtitle()
                 vm.intervalGetMessage()
@@ -243,5 +312,6 @@
             }
         }).iconClickBind().iconHoverBind()
     </script>
+     <script src="/static/carousel/js/index.js"></script>
 </body>
 </html>

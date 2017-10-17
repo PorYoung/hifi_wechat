@@ -16,7 +16,7 @@
     <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <style>
-        body{
+        html,body{
             height: 100%;
             overflow: hidden;
         }
@@ -113,8 +113,13 @@
             }
         }
         @media screen and (max-width: 767px){
-            body{
+            html,body{
                 width: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                right: 0;
             }
             .message-list{
                 margin-top: 5px;
@@ -215,13 +220,17 @@
             display: none;
             position: absolute;
             bottom: 50px;
-            font-size: 2em;
+            font-size: 3em;
+            text-align: center;
             color: #31b0d5;
             left: 0;
             right: 0;
         }
         #plusPanel > i{
             width: 2.2em;
+        }
+        #plusBtnWrap{
+            display: inline-flex;
         }
         .plusPanelShow{
             display: flex !important;
@@ -253,7 +262,7 @@
 <!--消息发送框-->
 <div class="input-group" id="inputBox">
     <span class="input-group-btn">
-        <div>
+        <div id="plusBtnWrap">
             <button class="btn btn-default" id="emojiBtn" type="button">😊</button>
             <button class="btn btn-default" id="plusBtn" type="button">➕</button>
         </div>
@@ -296,7 +305,7 @@
         <div class="list-group-item">
             <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i>
             <{ if(!!data[i].MsgType && data[i].MsgType == "image"){ }>
-            <p class="list-group-item-text"><img src="<{= data[i].mediaId }>" data-imgurl="<{= data[i].mediaId }>" class="weixinServerImage"></p>
+            <p class="list-group-item-text"><img src="<{= data[i].mediaId }>" data-imgurl="<{= data[i].mediaId }>" class="weixinServerImage weixinServerImageActive"></p>
             <{ }else{ }> 
             <p class="list-group-item-text"><{= data[i].content }></p>
             <{ } }>
@@ -307,9 +316,8 @@
         <em class="list-group-item-heading"><%= nickname %></em><img src="<{= data[i].headimgurl }>" class="avatar"/>
         <div class="list-group-item">
             <i style="position: absolute" class="glyphicon glyphicon-menu-right"></i>
-            <i style="position: absolute" class="glyphicon glyphicon-menu-left"></i>
             <{ if(!!data[i].MsgType && data[i].MsgType == "image"){ }>
-            <p class="list-group-item-text"><img src="<{= data[i].mediaId }>" data-imgurl="<{= data[i].mediaId }>" class="weixinServerImage"></p>
+            <p class="list-group-item-text"><img src="<{= data[i].mediaId }>" data-imgurl="<{= data[i].mediaId }>" class="weixinServerImage weixinServerImageActive"></p>
             <{ }else{ }> 
             <p class="list-group-item-text"><{= data[i].content }></p>
             <{ } }>
@@ -321,6 +329,104 @@
 <!--聊天系统前端业务逻辑-->
 <script src="/socket.io/socket.io.js"></script>
 <script src="/static/js/myUtils.js"></script>
+<script src="/static/js/weixin.js"></script>
+<script>
+    //globle
+    //处理socket通信
+    var allChat = io("/allChat");
+    var images = {
+                localId: [],
+                serverId: [],
+                date:null,
+                previewArr:[]
+    };
+    wx.config({
+    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+    appId: '<%= appId %>', // 必填，公众号的唯一标识
+    timestamp: '<%= timestamp %>', // 必填，生成签名的时间戳
+    nonceStr: '<%= nonceStr %>', // 必填，生成签名的随机串
+    signature: '<%= signature %>',// 必填，签名，见附录1
+    jsApiList: [
+        'checkJsApi',
+        'chooseImage',
+        'previewImage',
+        'uploadImage',
+        'downloadImage',
+        'getLocalImgData'
+    ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+});
+</script>
+<script>
+    wx.ready(function(){
+            wx.checkJsApi({
+                jsApiList: [
+                 'chooseImage',
+                 'previewImage',
+                 'uploadImage',
+                 'downloadImage',
+                 'getLocalImgData'
+                ],
+                success: function (res) {
+                    console.log(JSON.stringify(res));
+                }
+            })
+            //图片接口
+            //拍照、本地选图
+           
+            $("#wexinImage").click(function(event){
+                wx.chooseImage({
+                    count: 1,
+                    success: function (res) {
+                        images.localId = res.localIds;
+                        if (images.localId.length == 0) return;      
+                        images.date = new Date().getTime()             
+                        var msg = {
+                            from: "<%= nickname %>",
+                            content: '<img src="'+images.localId[0]+'" id="weixinLocalImage'+images.date+'" data-imgurl="'+images.localId[0]+'" class="imageUnUpload weixinLocalImage">',
+                            headimgurl: "<%= headimgurl %>",
+                            MsgType:"image"
+                        }
+                        $("#listPanel").append(messageBoxCompiled(msg,"right"));
+                        var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
+                        $("#listPanel").animate({scrollTop: scrollHeight}, 300);
+                        var i = 0, length = images.localId.length;
+                        images.serverId = [];
+                        function upload() {
+                            wx.uploadImage({
+                                localId: images.localId[i],
+                                success: function (res) {
+                                    var id = '#weixinLocalImage'+images.date
+                                    var current = $(id).attr('src')
+                                    images.previewArr.push(current)
+                                    $(id).removeClass('imageUnUpload').on('click',function(){
+                                        var current = $(this).attr('src')
+                                        wx.previewImage({
+                                            current: current,
+                                            urls: images.previewArr
+                                        });
+                                    });
+                                    showNotification('上传成功');
+                                    images.serverId.push(res.serverId);
+                                    msg.MsgType = 'image';
+                                    msg.content = '';
+                                    msg.mediaId = images.serverId[0];
+                                    allChat.emit("public_message", msg);
+                                },
+                                fail: function (res) {
+                                    showNotification('上传失败：'+JSON.stringify(res));
+                                }
+                            });
+                        }
+                        upload();
+    
+                        //内容为空则返回
+                        if(!msg.content) return;
+                        allChat.emit("public_message", msg);
+                    }
+                });
+            })
+    })
+</script>
 <script>
     $(function ($) {
     //读取allChat消息
@@ -336,9 +442,25 @@
                     loadMessageFlag = 2;
                 }else{
                     var compiled = _.template($("#message-template").html());
-                    //对图片消息进行处理
-
                     $("#listPanel").prepend(compiled({data}));
+                    $('.weixinServerImageActive').on('click',function(){
+                        var current = $(this).attr('src')
+                        current = 'http://' + window.location.host + current
+                        wx.previewImage({
+                            current: current,
+                            urls: images.previewArr
+                        });
+                    }).removeClass('weixinServerImageActive');
+                    data.forEach(function(item){
+                        if(!!item.MsgType&&item.MsgType=="image"){
+                            var current = item.mediaId
+                            current = 'http://' + window.location.host + current
+                            for(var i = images.previewArr.length;i > 0;i--){
+                                images.previewArr[i]=images.previewArr[i-1];
+                            }
+                            images.previewArr[0]=current;
+                        }
+                    })
                     //发出加载成功信号
                     loadMessageFlag = 1;
                 }
@@ -474,7 +596,7 @@
                         $("#listPanel").css({
                             transition: "all 1s",
                             transform: "translate3d(0,0,0)"
-                        })
+                        }).animate({scrollTop: '30px'}, 300);
                         $("#notification").css({height:"30px",lineHeight:"30px"}).html("").hide();
                     }
             }
@@ -564,111 +686,30 @@
                     bottom: $("#emojiBtn").css("height")
                 });
             },1);
-            // $('#inputText').blur();
         })
         
         $('body').on({
             'click':function(e){
                 var target = e.target;
                 if(target == $("#plusBtn")[0]){
+                    let bottom = $("#inputBox").height()
                     $("#plusPanel").css({
                         display:'flex',
-                        opacity:'0'
-                    }).addClass('plusPanelShow');
+                        opacity:'0',
+                        bottom:0
+                    }).addClass('plusPanelShow').animate({
+                        bottom:bottom
+                    },300);
                 }else{
                     $("#plusPanel").removeClass('plusPanelShow').css({
-                        display: 'none'
+                        display: 'none',
+                        bottom:0
                     });
                 }
             }
         })
     })
 
-</script>
-<script src="/static/js/weixin.js"></script>
-<script>
-    wx.config({
-    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-    appId: '<%= appId %>', // 必填，公众号的唯一标识
-    timestamp: '<%= timestamp %>', // 必填，生成签名的时间戳
-    nonceStr: '<%= nonceStr %>', // 必填，生成签名的随机串
-    signature: '<%= signature %>',// 必填，签名，见附录1
-    jsApiList: [
-        'checkJsApi',
-        'chooseImage',
-        'previewImage',
-        'uploadImage',
-        'downloadImage',
-        'getLocalImgData'
-    ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
-});
-</script>
-<script>
-    wx.ready(function(){
-        wx.checkJsApi({
-            jsApiList: [
-             'chooseImage',
-             'previewImage',
-             'uploadImage',
-             'downloadImage',
-             'getLocalImgData'
-            ],
-            success: function (res) {
-                console.log(JSON.stringify(res));
-            }
-        })
-
-        //图片接口
-        //拍照、本地选图
-        var images = {
-            localId: [],
-            serverId: [],
-            date:null
-        };
-        $("#wexinImage").click(function(event){
-            wx.chooseImage({
-                count: 1,
-                success: function (res) {
-                    images.localId = res.localIds;
-                    if (images.localId.length == 0) return;      
-                    images.date = new Date().getTime()             
-                    var msg = {
-                        from: "<%= nickname %>",
-                        content: '<img src="'+images.localId[0]+'" id="weixinLocalImage'+images.date+'" data-imgurl="'+images.localId[0]+'" class="imageUnUpload weixinLocalImage">',
-                        headimgurl: "<%= headimgurl %>"
-                    }
-                    $("#listPanel").append(messageBoxCompiled(msg,"right"));
-                    var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
-                    $("#listPanel").animate({scrollTop: scrollHeight}, 300);
-                    var i = 0, length = images.localId.length;
-                    images.serverId = [];
-                    function upload() {
-                        wx.uploadImage({
-                            localId: images.localId[i],
-                            success: function (res) {
-                                let id = '#weixinLocalImage'+images.date
-                                $(id).removeClass('imageUnUpload');
-                                showNotification('上传成功');
-                                images.serverId.push(res.serverId);
-                                msg.MsgType = 'image';
-                                msg.content = '';
-                                msg.mediaId = images.serverId[0];
-                                allChat.emit("public_message", msg);
-                            },
-                            fail: function (res) {
-                                showNotification('上传失败：'+JSON.stringify(res));
-                            }
-                        });
-                    }
-                    upload();
-
-                    //内容为空则返回
-                    if(!msg.content) return;
-                    allChat.emit("public_message", msg);
-                }
-            });
-        })
-})
 </script>
 </body>
 </html>

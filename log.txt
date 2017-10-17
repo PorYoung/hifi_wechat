@@ -66,3 +66,4 @@ Object{
 6.增加图片上传
     存储在static/image/message
     common/utils下的工具包需要优化
+7.下拉刷新修改allChat.ejs中的myTouchEvent
