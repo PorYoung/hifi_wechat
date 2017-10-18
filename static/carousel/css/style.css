@@ -32,7 +32,7 @@
   content: '';
   /* left: -1vw; */
   left:0;
-  top: -4vh;
+  top: -6vh;
   display: block;
   position: absolute;
   width: 100%;
@@ -58,8 +58,8 @@
 .slider__content {
   margin: auto;
   width: 65vw;
-  height: 32.5vw;
-  max-height: 60vh;
+  height: 36.56vw;
+  max-height: 80vh;
   will-change: transform;
   -webkit-transform-style: preserve-3d;
           transform-style: preserve-3d;

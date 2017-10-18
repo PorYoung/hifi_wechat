@@ -379,18 +379,31 @@
                     success: function (res) {
                         images.localId = res.localIds;
                         if (images.localId.length == 0) return;      
-                        images.date = new Date().getTime()             
+                        images.date = new Date().getTime();
+                        var localData = images.localId[0];
+                        if(!!window.__wxjs_is_wkwebview){
+                            wx.getLocalImgData({
+                                localId: images.localId[0], // 图片的localID
+                                success: function (res) {
+                                    localData = res.localData; // localData是图片的base64数据，可以用img标签显示
+                                }
+                            });    
+                        }
                         var msg = {
                             from: "<%= nickname %>",
-                            content: '<img src="'+images.localId[0]+'" id="weixinLocalImage'+images.date+'" data-imgurl="'+images.localId[0]+'" class="imageUnUpload weixinLocalImage">',
+                            content: '<img src="'+localData+'" id="weixinLocalImage'+images.date+'" data-imgurl="'+localData+'" class="imageUnUpload weixinLocalImage">',
                             headimgurl: "<%= headimgurl %>",
-                            MsgType:"image"
+                            sex: '<%= sex %>',
+                            province: '<%= province %>'
                         }
                         $("#listPanel").append(messageBoxCompiled(msg,"right"));
                         var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
                         $("#listPanel").animate({scrollTop: scrollHeight}, 300);
                         var i = 0, length = images.localId.length;
                         images.serverId = [];
+                        msg.mediaId = localData;
+                        msg.MsgType = "image";
+                        msg.content = '';
                         function upload() {
                             wx.uploadImage({
                                 localId: images.localId[i],
@@ -413,15 +426,11 @@
                                     allChat.emit("public_message", msg);
                                 },
                                 fail: function (res) {
-                                    showNotification('上传失败：'+JSON.stringify(res));
+                                    showNotification('抱歉,上传失败');
                                 }
                             });
                         }
                         upload();
-    
-                        //内容为空则返回
-                        if(!msg.content) return;
-                        allChat.emit("public_message", msg);
                     }
                 });
             })
@@ -628,7 +637,9 @@
             var msg = {
                 from: "<%= nickname %>",
                 content: $("#inputText").html(),
-                headimgurl: "<%= headimgurl %>"
+                headimgurl: "<%= headimgurl %>",
+                sex: '<%= sex %>',
+                province: '<%= province %>'
             }
             //内容为空则返回
             if(!msg.content) return;

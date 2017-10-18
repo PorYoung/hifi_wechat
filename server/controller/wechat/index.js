@@ -94,8 +94,8 @@ export default class {
         console.log("code:" + code)
         let url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${config.appID}&secret=${config.appSecret}&code=${code}&grant_type=authorization_code`
         let data = await utils.httpsGetJSON(url).catch(err => console.log(err))
-        console.log("正在处理微信用户验证")
-        console.log(data)
+        // console.log("正在处理微信用户验证")
+        // console.log(data)
         if (!data.access_token) {
             console.log(data.errcode + ' | ' + data.errmsg)
             return res.send(data.errmsg)
@@ -107,8 +107,8 @@ export default class {
         //拉取用户信息，存入用户数据库中
         url = `https://api.weixin.qq.com/sns/userinfo?access_token=${user.info.access_token}&openid=${user.info.openid}&lang=zh_CN`
         data = await utils.httpsGetJSON(url).catch(err => console.log(err))
-        console.log("正在拉取用户信息")
-        console.log(data)
+        // console.log("正在拉取用户信息")
+        // console.log(data)
         Object.assign(user.info, data)
         if (data.openid) {
             //鉴权标记
@@ -139,7 +139,7 @@ export default class {
             console.log(data.errcode + ' | ' + data.errmsg)
             return res.send(data.errmsg)
         }
-        console.log('重定向到：' + '/allChat?openid=' + user.info.openid)
+        // console.log('重定向到：' + '/allChat?openid=' + user.info.openid)
         return res.redirect('/allChat?openid=' + user.info.openid)
     }
 

@@ -4,7 +4,8 @@ const handle = socket => {
       //连接成功，将连接用户放入连接列表
       socket.nickname = msg.from;
       let info = await db.connection.findOneAndUpdate({
-          "nickname": msg.from
+          "nickname": msg.from,
+          "headimgurl": msg.headimgurl
       }, {
           $set: {
               socketId: socket.id
@@ -40,7 +41,6 @@ const handle = socket => {
             console.log(error)
           }
           let url = `https://api.weixin.qq.com/cgi-bin/media/get?access_token=${access_token}&media_id=${msg.mediaId}`
-          console.log(url)
           let filename = msg.mediaId + '.jpg'
           let src = await utils.httpsGetFile(url,filename).catch(err => {
               console.log(err)
@@ -49,8 +49,13 @@ const handle = socket => {
                 date: new Date().getTime()
               })
           })
+          if(!src.indexOf('undefined')||!src.indexOf('weixin://')){
+            socket.emit("notification", {
+                content: "抱歉，上传失败",
+                date: new Date().getTime()
+              })
+          }
           msg.mediaId = src
-          console.log(msg)
         }
       //不必向用户自身发送
       socket.broadcast.emit("public_message", msg)

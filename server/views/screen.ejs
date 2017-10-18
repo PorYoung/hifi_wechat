@@ -9,6 +9,35 @@
     <title>screen</title>
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/myUtils.js"></script>
+    <style>
+        .slider__text-item-head h3{
+            display: flex;
+            padding: 10px;
+        }
+        .slider__text-item-head-img{
+            border-radius:50%;
+            height: 100%;
+            max-height:80px;
+            max-width:80px;
+        }
+        .slider__images-item--active {
+            animation: imgAnimate 10s linear alternate;
+        }
+        @keyframes imgAnimate{
+            0%{
+                width: calc(100% + 1em * 2);
+                height: calc(100% + 0em * 2);
+            }
+            50%{
+                width: calc(100% + 2em * 2);
+                height: calc(100% + 10em * 2);
+            }
+            100%{
+                width: calc(100% + 1em * 2);
+                height: calc(100% + 1em * 2);
+            }
+        }
+    </style>
 </head>
 <body>
     
@@ -25,16 +54,26 @@
             </div>
             <div class="wallCon">
                 <div id="w-message" class="wallCon-active">
-                    <message-show v-for="msg in messageArr" :msg="msg"></message-show>
+                    <component :is="messageCurrentView" v-for="msg in currentArr" :msg="msg"></component>
+                    <!-- <message-show v-for="msg in messageArr" :msg="msg"></message-show> -->
                 </div>
                 <div id="w-image" v-on:click="imageClickDispatch">
                     <div class="slider" id="slider" style="--img-prev:url(/static/image/message/6DPsQyJviLDVd1T_Ee2YbJ4-yKdl_fj8iL_sqyxT8xaOn-7WdqFKW7L7cvPMyEk3.jpg)"> 
                         <div class="slider__content" id="slider-content">
                             <div class="slider__images">
-                                <image-show v-for="(msg,index) in imageData" :msg="msg" :index="index" :data-id="index + 1"></image-show>
+                                <div class="slider__images-item slider__images-item--active" data-id="1"><img src="/static/image/message/6DPsQyJviLDVd1T_Ee2YbJ4-yKdl_fj8iL_sqyxT8xaOn-7WdqFKW7L7cvPMyEk3.jpg" class="slider__images-item-img"/></div>
+                                <image-show v-for="(msg,index) in imageData" :msg="msg" :index="index" :data-id="index + 2"></image-show>
                             </div>
                             <div class="slider__text">
-                                <image-info-show v-for="(msg,index) in imageData" :msg="msg" :index="index" :data-id="index + 1"></image-info-show>
+                                <div class="slider__text-item slider__text-item--active" data-id="1">
+                                    <div class="slider__text-item-head">
+                                        <h3>HIFI HERE</h3>
+                                    </div>
+                                    <div class="slider__text-item-info">
+                                    <p>WELCOME!!</p>
+                                    </div>
+                                </div>
+                                <image-info-show v-for="(msg,index) in imageData" :msg="msg" :index="index" :data-id="index + 2"></image-info-show>
                             </div>
                         </div>
                         <div class="slider__nav">
@@ -69,31 +108,6 @@
         </div> 
     </div>
     
-   
-    <script>
-        $(function ($) {
-            $("#background").starfield({
-                starDensity: 0.5,
-                mouseScale: 1,
-                seedMovement: false,
-                BOUNDX: 1000,
-                BOUNDY: 500
-            })
-            var iconEventArr = [
-                ['#btn-message','#w-message','fa-commenting','fa-commenting-o'],
-                ['#btn-image','#w-image','fa-image','fa-photo'],
-                ['#btn-guests','#w-guests','fa-user-circle-o','fa-user-circle'],
-                ['#btn-lottery','#w-lottery','fa-gift','fa-smile-o'],
-                ['#btn-vote','#w-vote','fa-bar-chart','fa-line-chart']
-            ]
-            var menuEvent = new iconEvent({
-                id_linkActiveClass: 'wallCon-active',
-                activeMenu:['#btn-message','#w-message','fa-commenting-o','fa-commenting'],
-                arr: iconEventArr
-            })
-            menuEvent.iconHoverBind().iconClickBind()
-        })
-    </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/static/js/vue.js"></script>
     <script type="text/x-template" id="message-template">
@@ -107,36 +121,29 @@
             <footer><i class="fa fa-hand-o-right"></i></footer>
         </div>
     </script>
+    <script type="text/x-template" id="one-message-template">    
+    </script>
     <script type="text/x-template" id="image-template">
-        <div v-if="index == 0" class="slider__images-item slider__images-item--active"><img :src="msg.mediaId"/></div>
-        <div v-else class="slider__images-item"><img :src="msg.mediaId"/></div>
+        <div class="slider__images-item"><img :src="msg.mediaId" class="slider__images-item-img"/></div>
     </script>
     <script type="text/x-template" id="image-info-template">
-        <div v-if="index == 0" class="slider__text-item slider__text-item--active">
+        <div class="slider__text-item">
             <div class="slider__text-item-head">
-                <h3>{{msg.from}}</h3>
+                <h3><img :src="msg.headimgurl" class="slider__text-item-head-img"/></h3>
             </div>
             <div class="slider__text-item-info">
-            <p>“And into the forest I go, to lose my mind and find my soul”</p>
-            </div>
-        </div>
-        <div v-else class="slider__text-item">
-            <div class="slider__text-item-head">
-                <h3>{{msg.from}}</h3>
-            </div>
-            <div class="slider__text-item-info">
-            <p>“And into the forest I go, to lose my mind and find my soul”</p>
+            <p>{{msg.from}} | {{msg.sex}} | {{msg.province}}</p>
             </div>
         </div>
     </script>
-   <script>
+    <script>
         Vue.component('live-subtitle',{
             template:'<div style="overflow:visible;"><img :src="msg.headimgurl" style="margin-left:-5px;margin-right:5px;width:40px;height:40px;" ><span v-html="msg.content">{{ msg.content }}</span></div>',
             props:['msg']
         })
         Vue.component('message-show',{
             template:'#message-template',
-            props:['msg']
+            props:['msg','currentArr']
         })
         Vue.component('image-show',{
             template:"#image-template",
@@ -155,6 +162,8 @@
                 liveSubtitleCount:0,
                 messageArr:[],
                 messageCount:0,
+                messageCurrentView:undefined,
+                currentArr:[],
                 liveSubtitleSeen:false,
                 intervalGetSubtitleTimer:undefined,
                 intervalMoveTimer:undefined,
@@ -183,6 +192,13 @@
                     }
 
                 },
+                messageCurrentView:function(newval,oldval){
+                    if(newval == "message-show"){
+                        vm.currentArr=vm.messageArr
+                    }else if(newval == "one-message-show"){
+                        vm.currentArr=[]
+                    }
+                }
             },
             methods:{
                 imageClickDispatch:function(){
@@ -245,15 +261,16 @@
                         //判断是图片还是消息
                     if(!!item.MsgType&&item.MsgType=="image"){
                         vm.imageData.push(item)
-                        console.log("[新图片入库|total:"+vm.imageData.length+"]")
+                        console.info("[新图片入库]")
                     }else{
                         vm.liveSubtitleData.push(item)
-                        console.log("[新消息入库|total"+vm.liveSubtitleData.length+"]")
+                        console.info("[新消息入库]")
                     }
                 })
                     vm.liveSubtitleSeen = true
                     vm.intervalGetMessage()
                     vm.intervalGetSubtitle()
+                    vm.messageCurrentView = "message-show"
                 }
             })
 
@@ -273,10 +290,10 @@
             //判断是图片还是消息
             if(!!msg.MsgType&&msg.MsgType=="image"){
                 vm.imageData.push(msg)
-                console.log("[新图片入库|total:"+vm.imageData.length+"]")
+                console.info("[新图片入库]")
             }else{
                 vm.liveSubtitleData.push(msg)
-                console.log("[新消息入库|total"+vm.liveSubtitleData.length+"]")
+                console.info("[新消息入库]")
             }
             if(vm.liveSubtitleArr.length < 5) {
                 vm.intervalGetSubtitle()
@@ -312,6 +329,82 @@
             }
         }).iconClickBind().iconHoverBind()
     </script>
-     <script src="/static/carousel/js/index.js"></script>
+    
+    <script>
+        $(function ($) {
+            $("#background").starfield({
+                starDensity: 0.5,
+                mouseScale: 1,
+                seedMovement: false,
+                BOUNDX: 1000,
+                BOUNDY: 500
+            })
+            var iconEventArr = [
+                ['#btn-message','#w-message','fa-commenting','fa-commenting-o'],
+                ['#btn-image','#w-image','fa-image','fa-photo'],
+                ['#btn-guests','#w-guests','fa-user-circle-o','fa-user-circle'],
+                ['#btn-lottery','#w-lottery','fa-gift','fa-smile-o'],
+                ['#btn-vote','#w-vote','fa-bar-chart','fa-line-chart']
+            ]
+            var menuEvent = new iconEvent({
+                id_linkActiveClass: 'wallCon-active',
+                activeMenu:['#btn-message','#w-message','fa-commenting-o','fa-commenting'],
+                arr: iconEventArr,
+                extraEvent:function(id,id_link,that){
+                    if(id_link == "#w-image"){
+                        //设计时可以做判断是否需要全屏显示
+                        $("#w-image").css({
+                            position:'absolute',
+                        }).animate({
+                            left:'-100px',
+                            right:'-100px',
+                            top:'0',
+                            bottom:'0'
+                        },1000)
+                        slideTimer = setTimeout(autoSlide,5000)
+                    }else if(!!slideTimer){
+                        clearTimeout(slideTimer)
+                        $("#w-image").css({
+                            position:'initial',
+                            left:'initial',
+                            right:'initial',
+                            top:'initial',
+                            bottom:'initial'
+                        })
+                    }
+                }
+            })
+            //为每个消息绑定事件
+            menuEvent.iconHoverBind().iconClickBind()
+            
+            //消息显示状态下定时显示图片
+            var intervalImageFlag = false
+            var intervalImageHidden = function(){
+                if(intervalImageFlag){
+                        if('#w-image' == menuEvent.settings.activeMenu[1]){
+                            intervalImageFlag = false
+                        }else if(slider.inTransit){
+                            setTimeout(intervalImageHidden,5000)
+                            return
+                        }else{
+                            $("#w-message").addClass('wallCon-active')
+                            $("#w-image").removeClass('wallCon-active')
+                            intervalImageFlag = false
+                        }
+                    }
+                setTimeout(intervalImageShow,10000)
+            }
+            var intervalImageShow = function(){
+                if($("#w-message").hasClass('wallCon-active')){
+                    $("#w-message").removeClass('wallCon-active')
+                    $("#w-image").addClass('wallCon-active')
+                    intervalImageFlag = true
+                }
+                setTimeout(intervalImageHidden,5000)
+            }
+            setTimeout(intervalImageShow,6000);  
+        })
+    </script>
+    <script src="/static/carousel/js/index.js"></script>
 </body>
 </html>

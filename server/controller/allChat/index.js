@@ -63,6 +63,8 @@ export default class {
             return res.render('allChat', {
                 nickname: userinfo.nickname,
                 headimgurl: userinfo.headimgurl,
+                sex:userinfo.sex,
+                province:userinfo.province,
                 appId: config.appID,
                 timestamp: timestamp,
                 nonceStr: config.token,

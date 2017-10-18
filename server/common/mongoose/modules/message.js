@@ -8,6 +8,8 @@ const messageSchema = new mongoose.Schema({
   //消息类型
   MsgType : String,
   content : String,
+  sex: String,
+  province: String,
   //微信提供的用于获取资源的media_id
   mediaId : String
 })

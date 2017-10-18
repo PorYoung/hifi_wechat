@@ -1,5 +1,7 @@
 'use strict';
-
+//删除关于圆点切换的事件
+//poryoung:修改52行及next和prev方法中this.length为this.images.length
+//poryoung:修改41行通过标签img获取为通过类名获取
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -38,10 +40,8 @@ var Slider = function () {
     // taking advantage of the live nature of 'getElement...' methods
     this.activeImg = el.getElementsByClassName(activeImgClass);
     this.activeText = el.getElementsByClassName(activeTextClass);
-    this.images = el.getElementsByTagName('img');
-
-    // document.getElementById('slider-dots').addEventListener('click', this.onDotClick.bind(this));
-
+    this.images = el.getElementsByClassName(imgClass+'-img');
+console.log(this.images.length)
     document.getElementById('left').addEventListener('click', this.prev.bind(this));
 
     document.getElementById('right').addEventListener('click', this.next.bind(this));
@@ -49,7 +49,6 @@ var Slider = function () {
     window.addEventListener('resize', this.onResize.bind(this));
 
     this.onResize();
-
     this.length = this.images.length;
     this.lastX = this.lastY = this.targetX = this.targetY = 0;
   }
@@ -151,23 +150,6 @@ var Slider = function () {
     currentImage.style.setProperty('transform', '\n      translateX(' + maxImgOffset * -xCoeff + 'em)\n      translateY(' + maxImgOffset * yCoeff + 'em)\n    ');
   };
 
-  Slider.prototype.onDotClick = function onDotClick(_ref6) {
-    var target = _ref6.target;
-
-    if (this.inTransit) return;
-
-    var dot = target.closest('.slider__nav-dot');
-
-    if (!dot) return;
-
-    var nextId = dot.dataset.id;
-    var currentId = this.activeImg[0].dataset.id;
-
-    if (currentId == nextId) return;
-
-    this.startTransition(nextId);
-  };
-
   Slider.prototype.transitionItem = function transitionItem(nextId) {
     var _this = this;
 
@@ -262,18 +244,16 @@ var Slider = function () {
   };
 
   Slider.prototype.next = function next() {
+    console.log(this.inTransit)
     if (this.inTransit) return;
     var nextId = +this.activeImg[0].dataset.id + 1;
     if (nextId > this.images.length) nextId = 1;
-
     this.startTransition(nextId);
   };
 
   Slider.prototype.prev = function prev() {
     if (this.inTransit) return;
-
     var nextId = +this.activeImg[0].dataset.id - 1;
-
     if (nextId < 1) nextId = this.images.length;
 
     this.startTransition(nextId);
@@ -315,25 +295,17 @@ var Slider = function () {
 var sliderEl = document.getElementById('slider');
 var slider = new Slider(sliderEl);
 // ------------------ Demo stuff ------------------------ //
-
-var timer = 0;
-
+var slideTimer = 0;
 function autoSlide() {
   requestAnimationFrame(function () {
     slider.next();
   });
-
-  timer = setTimeout(autoSlide, 5000);
+  slideTimer = setTimeout(autoSlide, 15000);
 }
-
 function stopAutoSlide() {
-  clearTimeout(timer);
-
-  this.removeEventListener('touchstart', stopAutoSlide);
-  this.removeEventListener('mousemove', stopAutoSlide);
+  clearTimeout(slideTimer);
 }
 
-sliderEl.addEventListener('mousemove', stopAutoSlide);
-sliderEl.addEventListener('touchstart', stopAutoSlide);
-
-timer = setTimeout(autoSlide, 2000);
+// sliderEl.addEventListener('mousemove', stopAutoSlide);
+// sliderEl.addEventListener('touchstart', stopAutoSlide);
+// timer = setTimeout(autoSlide,15000);
