@@ -300,3 +300,6 @@ text-align: center;
 #c-r-s-panel-guests-addnew > p > span{
     margin-right: 5px;
 }
+#c-r-s-panel-guests-addnew-avatar{
+    cursor: pointer;
+}

@@ -5,11 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link href="/static/css/console.css" rel="stylesheet">
     <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/plus/css/jquery.popuplayer.css" rel="stylesheet">
+    <link href="/static/plus/css/cropbox.css" rel="stylesheet">
     <title>console</title>
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/myUtils.js"></script>
+    <!-- <script src="/static/plus/js/jquery.popuplayer.js"></script> -->
+    <script src="/static/plus/js/jquery.popuplayer.js"></script>
+    <script src="/static/plus/js/cropbox.js"></script>
+    <style>
+        .popup-layer-content{
+            display: flex;
+        }
+        .cropboxCloseWrap{
+            position: absolute;
+            top: -50%;
+            left: calc(50% - 30px);
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+        }
+        .cropboxCloseWrap:hover .cropboxClose{
+            animation-play-state: paused;
+        }
+        .cropboxCloseWrap > span{
+            position: absolute;
+            font-size: 20px;
+            left: calc(50% - 20px);
+            top: calc(50% - 15px);
+            color: #eeeeee;
+        }
+        .cropboxClose{
+            position: absolute;
+            line-height: 60px;
+            text-align: center;
+            border-radius: 50%;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background: #41ab6b;
+            border: 30px solid #31b0d5;
+            animation: cropboxCloseSpin ease-in 5s alternate infinite;
+            transition: all 1s;
+        }
+        .cropboxClose::after,.cropboxClose::before{
+            content: ' ';
+            display: block;
+            position: relative;
+            width: 30px;
+            height: 30px;
+            left: -15px;
+            border-radius: 50%;
+            background: #31b0d5;
+        }
+        .cropboxClose::before{
+            bottom: -5px;
+        }
+        @keyframes cropboxCloseSpin{
+            0%{
+                transform: rotate(0);
+                border-radius: 50%;
+            }
+            25%{
+                border-radius: 40% 50% 25% 45%;
+            }
+            50%{
+                border-radius: 40%;
+            }
+            75%{
+                border-radius: 20% 35% 45% 40%;
+            }
+            100%{
+                transform: rotate(365deg);
+                border-radius: 45%; 
+            }
+        }
+    </style>
     <script>
-        $(($)=>{
+        $(function($){
             const iconEventArr = [['#userInfo','#c-r-u','fa-user','fa-user-o'],
                 ['#interface','#c-r-i','fa-object-ungroup','fa-object-group'],
                 ['#setting','#c-r-s','fa-toggle-off','fa-toggle-on'],
@@ -63,6 +137,83 @@
                 activeMenu:['#c-r-s-panel-guests-list','','','']
             }).iconHoverBind().iconClickBind()
 
+
+            //头像修改
+            var cropboxHTML = `
+            <div class="cropboxCloseWrap"><i class="cropboxClose">--</i><span>完成</span></div>
+            <div class="imageBox">
+		        <div class="thumbBox"></div>
+		        <div class="spinner" style="display: none">Loading...</div>
+            </div>
+            <div class="imageBoxPrev">
+                <div class="imageBoxAction"> 
+                    <div class="new-contentarea tc"> 
+                    <a href="javascript:void(0)" class="upload-img">
+                        <label for="upload-file">选择图像</label>
+                    </a>
+                    <input type="file" class="" name="upload-avatar" id="upload-avatar" />
+                    </div>
+                    <input type="button" id="btnCrop"  class="Btnsty_peyton" value="裁切">
+                    <input type="button" id="btnZoomIn" class="Btnsty_peyton" value="+"  >
+                    <input type="button" id="btnZoomOut" class="Btnsty_peyton" value="-" >
+                </div>
+                <div class="cropped"></div>
+            </div>
+            </div>`
+            var avatarData = {}
+            var uploadAvatar = function(){
+                    avatarData.username = "<%= username %>"
+                    avatarData.imgData = cropper.getBlob(avatarData.imgData)
+                    $.post('/api/wall/uploadAvatar',avatarData,function(){
+                        console.log(avatarData)
+                    })
+            }
+
+            $('#c-r-s-panel-guests-addnew-avatar').PopupLayer({
+                content: cropboxHTML, // 内容，可以传入纯文本或类名或html
+                target: "#c-r-s-panel-guests", // 把弹出层添加到的目标节点
+                to: "top",   // 向哪个方向展开
+                screenRatio: 0.5, // 占屏幕百分比
+                blur: true, // 是否开启毛玻璃效果
+                blurAreas: "#c-r-s-panel-guests-addnew",    //默认body > *
+                color: "#000", // 文本颜色
+                backgroundColor: "#eee", // 背景颜色
+                contentToggle: false, // 点击content是否关闭弹出层
+                closeBtn: '.cropboxCloseWrap',  // 指定关闭按钮
+                closeCallbackBefore:uploadAvatar,   //关闭前执行的函数
+                // openCallback: null, // 展开的回调
+                // closeCallback: null // 关闭的回调
+            });
+            var options ={
+                thumbBox: '.thumbBox',
+                spinner: '.spinner',
+                imgSrc: '/static/image/1.jpg'
+            }
+            var cropper = $('.imageBox').cropbox(options);
+            $('#upload-avatar').on('change', function(){
+                var reader = new FileReader()
+                reader.onload = function(e) {
+                    options.imgSrc = e.target.result
+                    cropper = $('.imageBox').cropbox(options)
+                }
+                reader.readAsDataURL(this.files[0])
+            })
+            $('#btnCrop').on('click', function(){
+                var img = cropper.getDataURL()
+                avatarData.imgData = img
+                $('.cropped').html('')
+                $('.cropped').append('<img src="'+img+'" align="absmiddle" style="width:64px;margin-top:4px;border-radius:64px;box-shadow:0px 0px 12px #7E7E7E;" ><p>64px*64px</p>')
+                $('.cropped').append('<img src="'+img+'" align="absmiddle" style="width:128px;margin-top:4px;border-radius:128px;box-shadow:0px 0px 12px #7E7E7E;"><p>128px*128px</p>')
+                $('.cropped').append('<img src="'+img+'" align="absmiddle" style="width:180px;margin-top:4px;border-radius:180px;box-shadow:0px 0px 12px #7E7E7E;"><p>180px*180px</p>')
+                $('#c-r-s-panel-guests-addnew-avatar').attr({src:img})
+            })
+            $('#btnZoomIn').on('click', function(){
+                cropper.zoomIn()
+            })
+            $('#btnZoomOut').on('click', function(){
+                cropper.zoomOut()
+            })
+
             var guestsIconSaveArr = [
                 ['#c-r-s-panel-guests-panel-save','#c-r-s-panel-guests-list','','']
             ]
@@ -74,21 +225,38 @@
                 activeMenu:['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','',''],
                 extraEventRemove: function (id,id_link) {
                     if(id == '#c-r-s-panel-guests-addbtn') {
+                        var name = $('#c-r-s-panel-guests-addnew-guestName').val()
+                        var date = new Date().getTime()
+                        var title = $('#c-r-s-panel-guests-addnew-guestTitle').val()
+                        var introduction = $('#c-r-s-panel-guests-addnew-guestIntroduction').val()
+                        var info = {
+                            userId: name + date,   //名称+创建日期时间戳，用于唯一标识用户
+                            name: name,   //名称
+                            title: title,  //头衔
+                            introduction: introduction,    //介绍
+                            avatar: ''     //头像地址
+                        }
+                        $.post('/api/guests',info,function(data){
+                            if(!data || !data.guests){
+                                //保存失败
+                            }else{
+                                //保存成功
+                                var html = `<div><img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}"></div>`
+                                $('#c-r-s-panel-guests-list div:last-child').prev().after(html)
+                            }
+
+                        })
                         /*向服务器发送请求，判断是否保存成功，成功返回1，失败返回-1
                         /*
                         /*
                         /*
                         */
-                        var html = `<div>
-                            <img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}">
-                        </div>`
                         $('#c-r-s-panel-guests-addnew-avatar').attr({
                             src:'/static/image/avatar_default.jpg'
                         })
                         $('#c-r-s-panel-guests-addnew-guestName').val('')
                         $('#c-r-s-panel-guests-addnew-guestTitle').val('')
                         $('#c-r-s-panel-guests-addnew-guestIntroduction').val('')
-                        $('#c-r-s-panel-guests-list div:last-child').prev().after(html)
                     }
                 }
             }).iconClickBind().iconHoverBind()
@@ -150,9 +318,7 @@
                     </div>
                 </div>
             </div>
-            <div id="c-r-i">
-
-            </div>
+            <div id="c-r-i"></div>
             <div id="c-r-s">
                 <div id="c-r-s-wrap">
                     <div id="c-r-s-guests">
@@ -169,15 +335,15 @@
                     </div>
                     <div id="c-r-s-guests2">
                         <i class="fa fa-user-circle-o"></i>
-                        <span>来宾</span>
+                        <span>other</span>
                     </div>
                     <div id="c-r-s-vote2">
                         <i class="fa fa-bar-chart"></i>
-                        <span>投票</span>
+                        <span>other</span>
                     </div>
                     <div id="c-r-s-lottery2">
                         <i class="fa fa-gift"></i>
-                        <span>彩蛋</span>
+                        <span>other</span>
                     </div>
                 </div>
                 <div id="c-r-s-panel-guests" class="c-r-s-panel">
