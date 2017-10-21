@@ -385,8 +385,8 @@
         $("#submit").click(function () {
             if(checkForm.username&&checkForm.password&&checkForm.confirmPassword){
                 //表单验证完成
-                let html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
-                let clearMyLoading = myLoading("Waiting...",html);
+                var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
+                var clearMyLoading = myLoading("Waiting...",html);
                 $.post("/register",{username: $("#username").val(), password: $("#password").val()},function (res) {
                     if(res === "1"){
                         //注册成功

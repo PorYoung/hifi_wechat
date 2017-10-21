@@ -124,4 +124,7 @@ a.upload-img:hover{
 	background-color: #ec7e70;
 }
 
-.tc{text-align:center;}
+.tc{
+	text-align:center;
+	position: relative;
+}

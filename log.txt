@@ -67,3 +67,14 @@ Object{
     存储在static/image/message
     common/utils下的工具包需要优化
 7.下拉刷新修改allChat.ejs中的myTouchEvent
+8.formidable处理上传文件
+    form.Parse(req);
+    form.on('fileBegin',function(name,file){
+        file.name = ''
+        file.path = ''
+        file.type = ''
+    })
+9.设计缺陷，需要定期清理宾客头像
+10.MONGO对数组复杂的操作
+    找到username存在且guests数组中存在guestsId为info.guestId的数据，并将其修改
+    db.wall.findOneAndUpdate({$and:[{username:info.username},{guests:{$elemMatch:{guestId:info.guestId}}}]},{$set:{"guests.$":info}},{upsert:false,new:true})

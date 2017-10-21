@@ -224,27 +224,14 @@ text-align: center;
     margin-right: 1em;
     cursor: pointer;
 }
-/*#c-r-s-panel-guests > div,#c-r-s-panel-lottery > div,#c-r-s-panel-vote > div{*/
-    /*flex: 1;*/
-    /*display: flex;*/
-    /*flex-direction: column;*/
-    /*justify-content: center;*/
-    /*align-items: center;*/
-/*}*/
-
-/*#c-r-s-panel-guests-list{*/
-    /*display: flex;*/
-    /*flex: 1;*/
-    /*justify-content: space-around;*/
-    /*align-items: center;*/
-    /*flex-wrap: wrap;*/
-/*}*/
 #c-r-s-panel-guests > div{
     display: none;
 }
 #c-r-s-panel-guests-list{
     overflow-x: hidden;
     overflow-y: auto;
+    width: 80%;
+    margin: auto;
 }
 #c-r-s-panel-guests-list::-webkit-scrollbar{
     width: 5px;

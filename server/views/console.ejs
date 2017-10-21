@@ -13,6 +13,7 @@
     <!-- <script src="/static/plus/js/jquery.popuplayer.js"></script> -->
     <script src="/static/plus/js/jquery.popuplayer.js"></script>
     <script src="/static/plus/js/cropbox.js"></script>
+    <script src="/static/js/myLoading.js"></script>
     <style>
         .popup-layer-content{
             display: flex;
@@ -62,6 +63,24 @@
         .cropboxClose::before{
             bottom: -5px;
         }
+        .loadingBar{
+            display: flex;
+            justify-content: flex-end;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(38,38,38,.7);
+            border-radius: 2em;
+            width: 15px;
+            padding: 1px;
+            opacity: 0;
+        }
+        .loadingBar > i{
+            background-color:#45e3cc;
+            background-image: linear-gradient(45deg,rgba(255,255,255,.2) 25%,transparent 0,transparent 50%,rgba(255,255,255,.2) 0,rgba(255,255,255,.2) 75%,transparent 0);
+            background-size: 100% 15px;
+            width: 15px;
+            border-radius: 2em; 
+        }
         @keyframes cropboxCloseSpin{
             0%{
                 transform: rotate(0);
@@ -81,9 +100,88 @@
                 border-radius: 45%; 
             }
         }
+        @keyframes loadingBarMove{
+            0%{
+                background-position:0 0;
+            }
+            100%{
+                background-position:0 -100%;
+            }
+        }
     </style>
     <script>
         $(function($){
+            //初始化加载设置
+            const config = {
+                guests: []
+            }
+            $.get('/api/wall/guests?username=<%= username %>',function(data){
+                if(data != '-1') {
+                    config.guests = data
+                    data.forEach(function(item){
+                        var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${item.guestId}"><img src="${item.avatarSrc}" title="${item.name}"></div>`
+                        $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo)
+                    })
+                }
+            })
+            var showGuestInfo = function(){
+                $('#c-r-s-panel-guests-list').removeClass('c-r-s-panel-guests-active')
+                $('#c-r-s-panel-guests-addnew').addClass('c-r-s-panel-guests-active')
+                var info = {}
+                info.guestId = $(this).attr('data-guest-id')
+                // info.src = $(this).attr('src')
+                if(!info.guestId) return
+                var extraEventOnce = function(id,id_link,that){
+                    that.settings.arr = []
+                    guestsIconBackEvent.settings.activeMenu = []
+                    that.settings.arr.push(['#c-r-s-panel-guests-panel-back','#c-r-s-panel-guests-list','',''])
+                    that.iconHoverBind()
+                    that.iconClickBind()
+                    guestsIconBackEvent.settings.extraEvent = null
+                    guestsIconBackEvent.settings.activeMenu = ['#c-r-s-panel-guests-panel-back','#c-r-s-panel-guests-list','','']
+                }
+                if(guestsIconBackEvent.settings.activeMenu[0] == '#c-r-s-panel-guests-panel-back'){
+                    extraEventOnce('#c-r-s-panel-guests-panel-back','#c-r-s-panel-guests-list',guestsIconBackEvent)
+                }
+                guestsIconBackEvent.settings.activeMenu = ['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','','']
+                guestsIconBackEvent.settings.extraEvent = extraEventOnce
+                config.guests.forEach(function(item){
+                    if(item.guestId == info.guestId){
+                        $('#c-r-s-panel-guests-addnew-guestName').val(item.name)
+                        $('#c-r-s-panel-guests-addnew-guestTitle').val(item.title)
+                        $('#c-r-s-panel-guests-addnew-guestIntroduction').val(item.introduction)
+                        $('#c-r-s-panel-guests-addnew-avatar').attr({
+                            src:item.avatarSrc,
+                            'data-guest-id':item.guestId
+                        })
+                    }
+                })
+            }
+            var deleteGuestInfo = function(){
+                var info = {}
+                info.guestId = $(this).attr('data-guest-id')
+                if(!info.guestId) return
+                var html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Deletting...</span>"
+                clearMyLoading = myLoading("Deletting...",html);
+                $.get('/api/wall/deleteGuest',function(res){
+                    if(res == '1'){
+                        $('[data-guest-id="'+info.guestId+'"]').off().remove()
+                        clearMyLoading()
+                        html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                        clearMyLoading = myLoading("Success",html);
+                        setTimeout(function () {
+                            clearMyLoading();
+                        },1200); 
+                    }else{
+                        clearMyLoading();
+                        html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
+                        clearMyLoading = myLoading("Failed",html);
+                        setTimeout(function () {
+                            clearMyLoading();
+                        },1200);
+                    }
+                })
+            }
             const iconEventArr = [['#userInfo','#c-r-u','fa-user','fa-user-o'],
                 ['#interface','#c-r-i','fa-object-ungroup','fa-object-group'],
                 ['#setting','#c-r-s','fa-toggle-off','fa-toggle-on'],
@@ -114,9 +212,6 @@
                     right:'0'
                 },1000).children().css({'font-size':'1em'})
             }
-            var removeIconAnim = function (eleid,linkid) {
-
-            }
             var settingIconEvent = new iconEvent({
                 arr: settingIconArr,
                 idActiveClass: 'c-r-s-icon-active',
@@ -125,6 +220,7 @@
                 extraEvent: addIconAnim
             }).iconClickBind().iconHoverBind()
 
+            //查看、修改、添加宾客界面返回事件
             var guestsIconBackArr = [
                 ['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','',''],
                 ['#c-r-s-panel-guests-panel-back','#c-r-s-panel-guests-list','','']
@@ -134,24 +230,31 @@
                 idActiveClass:'c-r-s-panel-guests-active',
                 id_linkActiveClass:'c-r-s-panel-guests-active',
                 iconHoverBindInsertBool:false,
-                activeMenu:['#c-r-s-panel-guests-list','','','']
+                activeMenu:['#c-r-s-panel-guests-list','','',''],
+                extraEventRemove:function(){
+                    $('#c-r-s-panel-guests-addnew-guestName').val('')
+                    $('#c-r-s-panel-guests-addnew-guestTitle').val('')
+                    $('#c-r-s-panel-guests-addnew-guestIntroduction').val('')
+                    $('#c-r-s-panel-guests-addnew-avatar').removeAttr('data-guest-id').attr({
+                        src:'/static/image/avatar_default.jpg'
+                    })
+                }
             }).iconHoverBind().iconClickBind()
 
 
             //头像修改
-            var cropboxHTML = `
-            <div class="cropboxCloseWrap"><i class="cropboxClose">--</i><span>完成</span></div>
+            var cropboxHTML = `<div class="cropboxCloseWrap"><i class="cropboxClose">--</i><span>完成</span></div>
             <div class="imageBox">
-		        <div class="thumbBox"></div>
-		        <div class="spinner" style="display: none">Loading...</div>
+                <div class="thumbBox"></div>
+                <div class="spinner" style="display: none">Loading...</div>
             </div>
             <div class="imageBoxPrev">
                 <div class="imageBoxAction"> 
                     <div class="new-contentarea tc"> 
-                    <a href="javascript:void(0)" class="upload-img">
-                        <label for="upload-file">选择图像</label>
-                    </a>
-                    <input type="file" class="" name="upload-avatar" id="upload-avatar" />
+                        <a href="javascript:void(0)" class="upload-img">
+                            <label for="upload-avatar">选择图像</label>
+                        </a>
+                        <input type="file" class="" name="upload-avatar" id="upload-avatar" />
                     </div>
                     <input type="button" id="btnCrop"  class="Btnsty_peyton" value="裁切">
                     <input type="button" id="btnZoomIn" class="Btnsty_peyton" value="+"  >
@@ -160,15 +263,7 @@
                 <div class="cropped"></div>
             </div>
             </div>`
-            var avatarData = {}
-            var uploadAvatar = function(){
-                    avatarData.username = "<%= username %>"
-                    avatarData.imgData = cropper.getBlob(avatarData.imgData)
-                    $.post('/api/wall/uploadAvatar',avatarData,function(){
-                        console.log(avatarData)
-                    })
-            }
-
+            
             $('#c-r-s-panel-guests-addnew-avatar').PopupLayer({
                 content: cropboxHTML, // 内容，可以传入纯文本或类名或html
                 target: "#c-r-s-panel-guests", // 把弹出层添加到的目标节点
@@ -180,7 +275,7 @@
                 backgroundColor: "#eee", // 背景颜色
                 contentToggle: false, // 点击content是否关闭弹出层
                 closeBtn: '.cropboxCloseWrap',  // 指定关闭按钮
-                closeCallbackBefore:uploadAvatar,   //关闭前执行的函数
+                // closeCallbackBefore: null,   //关闭前执行的函数
                 // openCallback: null, // 展开的回调
                 // closeCallback: null // 关闭的回调
             });
@@ -189,7 +284,8 @@
                 spinner: '.spinner',
                 imgSrc: '/static/image/1.jpg'
             }
-            var cropper = $('.imageBox').cropbox(options);
+            var avatarData = null
+            var cropper = $('.imageBox').cropbox(options)
             $('#upload-avatar').on('change', function(){
                 var reader = new FileReader()
                 reader.onload = function(e) {
@@ -200,66 +296,141 @@
             })
             $('#btnCrop').on('click', function(){
                 var img = cropper.getDataURL()
-                avatarData.imgData = img
+                avatarData = img
                 $('.cropped').html('')
                 $('.cropped').append('<img src="'+img+'" align="absmiddle" style="width:64px;margin-top:4px;border-radius:64px;box-shadow:0px 0px 12px #7E7E7E;" ><p>64px*64px</p>')
                 $('.cropped').append('<img src="'+img+'" align="absmiddle" style="width:128px;margin-top:4px;border-radius:128px;box-shadow:0px 0px 12px #7E7E7E;"><p>128px*128px</p>')
                 $('.cropped').append('<img src="'+img+'" align="absmiddle" style="width:180px;margin-top:4px;border-radius:180px;box-shadow:0px 0px 12px #7E7E7E;"><p>180px*180px</p>')
-                $('#c-r-s-panel-guests-addnew-avatar').attr({src:img})
+                $('#c-r-s-panel-guests-addnew-avatar').attr({
+                    src:img
+                })
+                avatarData = cropper.getBlob(avatarData)
+                // uploadAvatar(avatarData)
+                // avatarData = null
             })
             $('#btnZoomIn').on('click', function(){
                 cropper.zoomIn()
             })
             $('#btnZoomOut').on('click', function(){
                 cropper.zoomOut()
-            })
-
-            var guestsIconSaveArr = [
-                ['#c-r-s-panel-guests-panel-save','#c-r-s-panel-guests-list','','']
-            ]
-            var guestsIconSaveEvent = new iconEvent({
-                arr:guestsIconSaveArr,
-                idActiveClass:'c-r-s-panel-guests-active',
-                id_linkActiveClass:'c-r-s-panel-guests-active',
-                iconHoverBindInsertBool:false,
-                activeMenu:['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','',''],
-                extraEventRemove: function (id,id_link) {
-                    if(id == '#c-r-s-panel-guests-addbtn') {
-                        var name = $('#c-r-s-panel-guests-addnew-guestName').val()
-                        var date = new Date().getTime()
-                        var title = $('#c-r-s-panel-guests-addnew-guestTitle').val()
-                        var introduction = $('#c-r-s-panel-guests-addnew-guestIntroduction').val()
-                        var info = {
-                            userId: name + date,   //名称+创建日期时间戳，用于唯一标识用户
-                            name: name,   //名称
-                            title: title,  //头衔
-                            introduction: introduction,    //介绍
-                            avatar: ''     //头像地址
-                        }
-                        $.post('/api/guests',info,function(data){
-                            if(!data || !data.guests){
-                                //保存失败
-                            }else{
-                                //保存成功
-                                var html = `<div><img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}"></div>`
-                                $('#c-r-s-panel-guests-list div:last-child').prev().after(html)
-                            }
-
-                        })
-                        /*向服务器发送请求，判断是否保存成功，成功返回1，失败返回-1
-                        /*
-                        /*
-                        /*
-                        */
-                        $('#c-r-s-panel-guests-addnew-avatar').attr({
-                            src:'/static/image/avatar_default.jpg'
-                        })
-                        $('#c-r-s-panel-guests-addnew-guestName').val('')
-                        $('#c-r-s-panel-guests-addnew-guestTitle').val('')
-                        $('#c-r-s-panel-guests-addnew-guestIntroduction').val('')
-                    }
+            })  
+            $('#c-r-s-panel-guests-panel-save').click(function(){
+                var guestId = $('#c-r-s-panel-guests-addnew-avatar').attr('data-guest-id')
+                if(!guestId) guestId = '<%= username %>' + new Date().getTime()
+                var info = {
+                    username: "<%= username %>",
+                    guestId: guestId,   //username+创建日期时间戳，用于唯一标识用户
+                    name: $('#c-r-s-panel-guests-addnew-guestName').val(),   //名称
+                    title: $('#c-r-s-panel-guests-addnew-guestTitle').val(),  //头衔
+                    introduction: $('#c-r-s-panel-guests-addnew-guestIntroduction').val(),    //介绍
+                    avatarSrc: $('#c-r-s-panel-guests-addnew-avatar').attr('src')     //头像地址
                 }
-            }).iconClickBind().iconHoverBind()
+                var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
+                var clearMyLoading = myLoading("Saving...",html)
+                var uploadAvatar = function(data){
+                    if(!data) {
+                        saveGuest(info)
+                        return
+                    }
+                    var file = new FormData()
+                    file.append('file',data)
+                    $('#c-r-s-panel-guests-addnew-avatar').prev().css({
+                        height: $('#c-r-s-panel-guests-addnew-avatar').height(),
+                        opacity: '1'
+                    }).children('i').css({
+                            animation:'loadingBarMove 5s linear infinite'
+                    })
+                    var onprogress = function (evt){
+                        var loaded = evt.loaded;     //已经上传大小情况 
+                        var tot = evt.total;      //附件总大小 
+                        var per = Math.floor(100*loaded/tot);  //已经上传的百分比 
+                        $('#c-r-s-panel-guests-addnew-avatar').prev().children('i').css({
+                            height: per+'%'
+                        })
+                    }
+                    $.ajax({
+                        url: '/api/wall/uploadAvatar?guestId='+info.guestId,
+                        type: 'POST',
+                        contentType: false,
+                        processData: false,
+                        data: file,
+                        xhr:function(){
+                            var xhr = $.ajaxSettings.xhr();
+                            if(onprogress && xhr.upload) {
+                                xhr.upload.addEventListener("progress" , onprogress, false);
+                                return xhr;
+                            }
+                        },
+                        success:function(res){
+                            if(res !== '-1'){
+                                // $('#c-r-s-panel-guests-addnew-avatar').attr({'data-imgsrc':res})
+                                info.avatarSrc = res
+                                $('#c-r-s-panel-guests-addnew-avatar').prev().animate({
+                                    opacity:0
+                                },1000).children('i').css({
+                                    animation:'initial'
+                                })
+                                $('#c-r-s-panel-guests-addnew-avatar').prev().children('i').css({
+                                    height: 0
+                                })
+                                avatarData = null
+                                saveGuest(info)
+                            }else{
+                                $('#c-r-s-panel-guests-addnew-avatar').prev().animate({
+                                    backgroundColor:'#d9534f'
+                                },1000)
+                                $('#c-r-s-panel-guests-addnew-avatar').attr({src:info.avatarSrc})
+                                clearMyLoading()
+                                html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
+                                clearMyLoading = myLoading("Upload Avatar Failed",html);
+                                setTimeout(function () {
+                                    clearMyLoading();
+                                },1200);
+                            }
+                        }
+                    })
+                }
+                var saveGuest = function(info){
+                    $.post('/api/wall/guests',info,function(data){
+                        if(!data || data == '-1'){
+                            //保存失败
+                            clearMyLoading();
+                            html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
+                            clearMyLoading = myLoading("Failed",html);
+                            setTimeout(function () {
+                                clearMyLoading();
+                            },1200);
+                        }else{
+                            //保存成功
+                            var flag = true
+                            for(var i = 0;i < config.guests.length;i++){
+                                if(config.guests[i].guestId == info.guestId){
+                                    Object.assign(config.guests[i],info)
+                                    $('[data-guest-id="'+info.guestId+'"]').children('img').attr({
+                                        src:$('#c-r-s-panel-guests-addnew-avatar').attr('src'),
+                                        title:config.guests[i].name
+                                    })
+                                    flag = false
+                                    break
+                                }
+                            }
+                            if(flag) {
+                                config.guests.push(info)
+                                var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${info.guestId}"><img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}""></div>`
+                                $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo)
+                                console.log(info)
+                            }
+                            clearMyLoading();
+                            html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                            clearMyLoading = myLoading("Success",html);
+                            setTimeout(function () {
+                                clearMyLoading();
+                            },1200); 
+                        }
+                    })
+                }
+                uploadAvatar(avatarData)
+            })
         })
     </script>
 </head>
@@ -349,9 +520,6 @@
                 <div id="c-r-s-panel-guests" class="c-r-s-panel">
                     <header><i class="fa fa-toggle-off"></i>来宾设置</header>
                     <div id="c-r-s-panel-guests-list" class="c-r-s-panel-guests-active">
-                        <div>
-                            <img src="/static/image/1.jpg" title="PorYoung">
-                        </div>
                         <div id="c-r-s-panel-guests-addbtn">
                             <img src="/static/image/add_icon.ico" title="添加">
                         </div>
@@ -360,7 +528,7 @@
                         <!--<span id="c-r-s-panel-guests-panel-back" style="color: #eeeeee;border-radius: 1em;background: #31b0d5;text-decoration: none;padding: 2px 5px;display: block;width: 40px;margin: 5px auto">返回</span>-->
                     </div>
                     <div id="c-r-s-panel-guests-addnew">
-                        <p><span>&nbsp;&nbsp;&nbsp;</span><img src="/static/image/avatar_default.jpg" id="c-r-s-panel-guests-addnew-avatar"></p>
+                        <p><span class="loadingBar"><i></i></span><img src="/static/image/avatar_default.jpg" id="c-r-s-panel-guests-addnew-avatar"></p>
                         <p><span>名称:</span><input name="guestName" id="c-r-s-panel-guests-addnew-guestName"></p>
                         <p><span>头衔:</span><input name="guestTitle" id="c-r-s-panel-guests-addnew-guestTitle"></p>
                         <p><span>介绍:</span><textarea name="guestIntroduction" rows="5" id="c-r-s-panel-guests-addnew-guestIntroduction"></textarea></p>

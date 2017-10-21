@@ -1,7 +1,8 @@
 //Github: https://github.com/PorYoung/javascript/blob/master/myalert/myalert.js
 
 //修改代码 -> myLoading
-function myLoading(titleString,textString) {
+//增加传入插入容器参数
+function myLoading(titleString,textString,container) {
     //如果已存在id myLoadingWrap
     // var wrap = document.getElementById('myLoadingWrap');
     // if(wrap){
@@ -27,7 +28,8 @@ function myLoading(titleString,textString) {
     wrap.id = "myLoadingWrap";
     //禁用右键菜单
     wrap.oncontextmenu = function() { return false; };
-    document.documentElement.appendChild(wrap);
+    if(!!container && !!document.querySelector(container)) document.querySelector(container).appendChild(wrap)
+    else document.documentElement.appendChild(wrap);
     //创建一个div作为loading窗口
     var DIV = document.createElement('div');
     DIV.innerHTML = "<div></div><p></p><i></i>";

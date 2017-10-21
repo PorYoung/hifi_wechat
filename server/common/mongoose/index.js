@@ -5,13 +5,15 @@ import connection from './modules/connection'
 import user from './modules/user'
 import message from './modules/message'
 import log from './modules/log'
+import wall from './modules/wall'
 
 const db = {
   dbConnetion,
   user,
   connection,
   message,
-  log
+  log,
+  wall
 }
 
 export default db

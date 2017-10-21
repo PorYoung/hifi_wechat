@@ -29,12 +29,12 @@ const httpsGetJSON = url => {
 
 const httpsGetFile = (url,filename) => {
     return new Promise((resolve,reject) => {
-            var wOption = {
+            let wOption = {
                 flags: 'a',
                 encoding: null,
                 mode: 0o666
             }
-            var fileWriteStream = fs.createWriteStream(path.join(__dirname,'/../../../static/image/message/'+filename),wOption);
+            let fileWriteStream = fs.createWriteStream(path.join(__dirname,'/../../../static/image/message/'+filename),wOption);
             https.get(url,res => {
                 try{
                     let status = JSON.parse(res.headers)
