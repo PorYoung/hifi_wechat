@@ -41,7 +41,7 @@ const handle = socket => {
             console.log(error)
           }
           let url = `https://api.weixin.qq.com/cgi-bin/media/get?access_token=${access_token}&media_id=${msg.mediaId}`
-          let filename = msg.mediaId + '.jpg'
+          let filename = '/image/message/' + msg.mediaId + '.jpg'
           let src = await utils.httpsGetFile(url,filename).catch(err => {
               console.log(err)
               socket.emit("notification", {

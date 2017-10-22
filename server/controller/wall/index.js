@@ -2,6 +2,8 @@ import db from '../../common/mongoose'
 import fs from 'fs'
 import path from 'path'
 import formidable from 'formidable'
+import utils from '../../common/utils'
+
 export default class {
     static async wall(req,res,next){
         //控制台 主页面渲染
@@ -59,5 +61,37 @@ export default class {
             form.on('error', (err) => {
                 return res.send('-1')
             });
+    }
+
+    static async getQRSrc(req,res,next){
+        let username = req.query.username
+        if(!username) return res.send('-1')
+        let query = await db.wall.findOne({username:username},{QRSrc:1,QRTicket:1,_id:0})
+        function fsExistsSync(path) {
+            try{
+                fs.accessSync(path,fs.F_OK);
+            }catch(e){
+                return false;
+            }
+            return true;
+        }
+        async function getQRByTicket(){
+            let url = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' + encodeURI(query.QRTicket)
+            let filename = '/image/users/QR_' + username + '.jpg'
+            let QRSrc = await utils.httpsGetFile(url,filename).catch(err => console.log(err))
+            if(!QRSrc) return res.send('-2')
+            query = await db.wall.findOneAndUpdate({username:username},{QRSrc:QRSrc},{upsert:false,new:true})
+            if(!query) return res.send('-1')
+            return res.send(QRSrc)
+        }
+        if(!!query.QRSrc){
+            if(!fsExistsSync(path.join(__dirname,'../../../' + query.QRSrc))){
+                if(!!query.QRTicket) getQRByTicket()
+                else next()
+            }else{
+                return res.send(query.QRSrc)
+            }
+        }else if(!!query.QRTicket) getQRByTicket()
+        else if(!query.QRSrc && !query.QRTicket) next()
     }
 }

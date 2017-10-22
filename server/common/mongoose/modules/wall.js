@@ -5,7 +5,9 @@ const wallSchema = new mongoose.Schema({
         type:String,
         require:[true,'username is necessary']
     },
-    guests: Array
+    guests: Array,
+    QRSrc: String,
+    QRTicket: String
 })
 const wall = mongoose.model('wall', wallSchema)
 export default wall

@@ -28,7 +28,6 @@ export default class {
             let userinfo = await db.user.findOne({username:username})
             if(userinfo){
                 //用户已存在
-                console.log(userinfo)
                 return res.send('-2')
             }else{
                 //处理password

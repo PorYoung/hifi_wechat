@@ -91,11 +91,8 @@ export default class {
     //处理微信用户验证
     static async authorization(req, res, next) {
         const code = req.query.code
-        console.log("code:" + code)
         let url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${config.appID}&secret=${config.appSecret}&code=${code}&grant_type=authorization_code`
         let data = await utils.httpsGetJSON(url).catch(err => console.log(err))
-        // console.log("正在处理微信用户验证")
-        // console.log(data)
         if (!data.access_token) {
             console.log(data.errcode + ' | ' + data.errmsg)
             return res.send(data.errmsg)
@@ -146,6 +143,28 @@ export default class {
     //引导微信用户进行验证的跳转页面
     static async start(req, res, next) {
         return res.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/api/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
+    }
+
+    //获取用户带场景值二维码
+    static async getQR(req,res,next){
+        let username = req.query.username
+        if(!username) return res.send('-1')
+        let access_token = await utils.readFileSync('/../../access_token.txt').catch(err => console.log(err))
+        try { access_token = JSON.parse(access_token.toString()).access_token} 
+        catch (error) { console.log(error) }
+
+        let url = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${access_token}`
+        let info = '{"action_name":"QR_LIMIT_STR_SCENE","action_info":{"scene":{"scene_str":"'+username+'"}}}'
+        let data = await utils.httpsPostJSON(url,info).catch(err => console.log(err))
+        if(!data || !data.ticket) return res.send('-2')
+
+        url = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' + encodeURI(data.ticket)
+        let filename = '/image/users/QR_' + username + '.jpg'
+        let QRSrc = await utils.httpsGetFile(url,filename).catch(err => console.log(err))
+        if(!QRSrc) return res.send('-2')
+        let query = await db.wall.findOneAndUpdate({username:username},{QRTicket:data.ticket,QRSrc:QRSrc},{upsert:false,new:true})
+        if(!query) return res.send('-1')
+        else return res.send(QRSrc)
     }
 
     async get_wechatImage(id){

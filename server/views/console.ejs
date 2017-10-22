@@ -126,7 +126,8 @@
         $(function($){
             //初始化加载设置
             const config = {
-                guests: []
+                guests: [],
+                QR_src:null
             }
             $.get('/api/wall/guests?username=<%= username %>',function(data){
                 if(data != '-1') {
@@ -134,6 +135,13 @@
                     data.forEach(function(item){
                         var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${item.guestId}"><img src="${item.avatarSrc}" title="${item.name}"><i class="fa fa-remove c-r-s-panel-guests-item-delete"></i></div>`
                         $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo).on('mouseover',guestMouseOverEvent).on('mouseout',guestMouseOutEvent)
+                    })
+                }
+            })
+            $.get('/api/wall/QRSrc?username=<%= username %>',function(data){
+                if(!!data && data != '-1' && data != '-2'){
+                    $('#QRSrc').attr({
+                        src:data
                     })
                 }
             })
@@ -511,7 +519,7 @@
                 <header><i class="fa fa-cog fa-spin"></i>用户信息</header>
                 <div>
                     <header>
-                        <img src="/static/image/u_logo.ico">
+                        <img src="/static/image/u_logo.ico" id="QRSrc">
                         <p>LOGO</p>
                     </header>
                     <div>
