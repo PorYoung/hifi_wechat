@@ -108,6 +108,19 @@
                 background-position:0 -100%;
             }
         }
+        .c-r-s-panel-guests-item-delete{
+            position: absolute;
+            right: -50%;
+            top: 0;
+            bottom: 0;
+            width: 50%;
+            color: red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            transition: all .5s;
+        }
     </style>
     <script>
         $(function($){
@@ -119,8 +132,8 @@
                 if(data != '-1') {
                     config.guests = data
                     data.forEach(function(item){
-                        var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${item.guestId}"><img src="${item.avatarSrc}" title="${item.name}"></div>`
-                        $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo)
+                        var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${item.guestId}"><img src="${item.avatarSrc}" title="${item.name}"><i class="fa fa-remove c-r-s-panel-guests-item-delete"></i></div>`
+                        $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo).on('mouseover',guestMouseOverEvent).on('mouseout',guestMouseOutEvent)
                     })
                 }
             })
@@ -129,7 +142,7 @@
                 $('#c-r-s-panel-guests-addnew').addClass('c-r-s-panel-guests-active')
                 var info = {}
                 info.guestId = $(this).attr('data-guest-id')
-                // info.src = $(this).attr('src')
+                info.imgData = $(this).children('img').attr('src')
                 if(!info.guestId) return
                 var extraEventOnce = function(id,id_link,that){
                     that.settings.arr = []
@@ -151,19 +164,28 @@
                         $('#c-r-s-panel-guests-addnew-guestTitle').val(item.title)
                         $('#c-r-s-panel-guests-addnew-guestIntroduction').val(item.introduction)
                         $('#c-r-s-panel-guests-addnew-avatar').attr({
-                            src:item.avatarSrc,
-                            'data-guest-id':item.guestId
+                            'data-imgsrc': item.avatarSrc,
+                            src: info.imgData,
+                            'data-guest-id': item.guestId
                         })
                     }
                 })
             }
-            var deleteGuestInfo = function(){
+            var deleteGuestInfo = function(evt){
+                evt.stopPropagation()
                 var info = {}
-                info.guestId = $(this).attr('data-guest-id')
+                info.guestId = $(this).parent().attr('data-guest-id')
                 if(!info.guestId) return
+                info.username = '<%= username %>'
+                for(var i = 0;i < config.guests.length;i++){
+                    if(config.guests[i].guestId == info.guestId){
+                        info.avatarSrc = config.guests[i].avatarSrc
+                        break
+                    }
+                }
                 var html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Deletting...</span>"
                 clearMyLoading = myLoading("Deletting...",html);
-                $.get('/api/wall/deleteGuest',function(res){
+                $.post('/api/wall/deleteGuest',info,function(res){
                     if(res == '1'){
                         $('[data-guest-id="'+info.guestId+'"]').off().remove()
                         clearMyLoading()
@@ -181,6 +203,18 @@
                         },1200);
                     }
                 })
+            }
+            var guestMouseOverEvent = function(){
+                $(this).children('.c-r-s-panel-guests-item-delete').css({
+                    right:0,
+                    background:'rgba(203,203,203,.5)'
+                }).on('click',deleteGuestInfo)
+            }
+            var guestMouseOutEvent = function(){
+                $(this).children('.c-r-s-panel-guests-item-delete').css({
+                    right:'-50%',
+                    background:'initial'
+                }).off()
             }
             const iconEventArr = [['#userInfo','#c-r-u','fa-user','fa-user-o'],
                 ['#interface','#c-r-i','fa-object-ungroup','fa-object-group'],
@@ -235,7 +269,7 @@
                     $('#c-r-s-panel-guests-addnew-guestName').val('')
                     $('#c-r-s-panel-guests-addnew-guestTitle').val('')
                     $('#c-r-s-panel-guests-addnew-guestIntroduction').val('')
-                    $('#c-r-s-panel-guests-addnew-avatar').removeAttr('data-guest-id').attr({
+                    $('#c-r-s-panel-guests-addnew-avatar').removeAttr('data-guest-id data-imgsrc').attr({
                         src:'/static/image/avatar_default.jpg'
                     })
                 }
@@ -323,7 +357,8 @@
                     name: $('#c-r-s-panel-guests-addnew-guestName').val(),   //名称
                     title: $('#c-r-s-panel-guests-addnew-guestTitle').val(),  //头衔
                     introduction: $('#c-r-s-panel-guests-addnew-guestIntroduction').val(),    //介绍
-                    avatarSrc: $('#c-r-s-panel-guests-addnew-avatar').attr('src')     //头像地址
+                    // avatarSrc: $('#c-r-s-panel-guests-addnew-avatar').attr('src')     //头像地址
+                    avatarSrc: $('#c-r-s-panel-guests-addnew-avatar').attr('data-imgsrc')   
                 }
                 var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
                 var clearMyLoading = myLoading("Saving...",html)
@@ -363,7 +398,7 @@
                         },
                         success:function(res){
                             if(res !== '-1'){
-                                // $('#c-r-s-panel-guests-addnew-avatar').attr({'data-imgsrc':res})
+                                $('#c-r-s-panel-guests-addnew-avatar').attr({'data-imgsrc':res})
                                 info.avatarSrc = res
                                 $('#c-r-s-panel-guests-addnew-avatar').prev().animate({
                                     opacity:0
@@ -416,9 +451,8 @@
                             }
                             if(flag) {
                                 config.guests.push(info)
-                                var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${info.guestId}"><img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}""></div>`
-                                $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo)
-                                console.log(info)
+                                var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${info.guestId}"><img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}""><i class="fa fa-remove c-r-s-panel-guests-item-delete"></i></div>`
+                                $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo).on('mouseover',guestMouseOverEvent).on('mouseout',guestMouseOutEvent)
                             }
                             clearMyLoading();
                             html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"

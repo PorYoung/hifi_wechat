@@ -9,6 +9,7 @@
     <title>screen</title>
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/myUtils.js"></script>
+    <script src="/static/js/myLoading.js"></script>
     <style>
         .slider__text-item-head h3{
             display: flex;
@@ -36,6 +37,12 @@
                 width: calc(100% + 1em * 2);
                 height: calc(100% + 1em * 2);
             }
+        }
+        .alertGuestsInfoPanel{
+            display:flex;
+            flex-direction:column;
+            justify-content:space-around;
+            align-items:center;
         }
     </style>
 </head>
@@ -137,6 +144,10 @@
         </div>
     </script>
     <script>
+        //初始化加载设置
+        const config = {
+            guests: []
+        }   
         Vue.component('live-subtitle',{
             template:'<div style="overflow:visible;"><img :src="msg.headimgurl" style="margin-left:-5px;margin-right:5px;width:40px;height:40px;" ><span v-html="msg.content">{{ msg.content }}</span></div>',
             props:['msg']
@@ -274,14 +285,14 @@
                 }
             })
 
-        var liveSubtitle = io('/allChat')
-        liveSubtitle.on("connect",function () {
-            liveSubtitle.emit("notification",{from:"wall-screen",content:"wall screen connection"})
+        var liveIo = io('/allChat')
+        liveIo.on("connect",function () {
+            liveIo.emit("notification",{from:"wall-screen",content:"wall screen connection"})
         })
-        liveSubtitle.on("notification",function (msg) {
+        liveIo.on("notification",function (msg) {
             console.log(msg.content)
         })
-        liveSubtitle.on("public_message",function(msg){
+        liveIo.on("public_message",function(msg){
             //接受的消息暂存于liveSubtitleData中，分批读取入liveSubtitleArr
             //最大存储100条消息(其他方案:存放在数据库中，定时拉取)
             if(vm.liveSubtitleData.length > 100){
@@ -300,7 +311,6 @@
                 vm.intervalGetMessage()
             }
         })
-
         var liveSubtitleIconArr = [
             ['#btn-subtitle','#liveSubtitle','fa-microphone','fa-microphone-slash']
         ]
@@ -383,7 +393,11 @@
                 if(intervalImageFlag){
                         if('#w-image' == menuEvent.settings.activeMenu[1]){
                             intervalImageFlag = false
-                        }else if(slider.inTransit){
+                        }else if('#w-guests' == menuEvent.settings.activeMenu[1] || '#w-lottery' == menuEvent.settings.activeMenu[1] || '#w-vote' == menuEvent.settings.activeMenu[1]){
+                            intervalImageFlag = false
+                            $("#w-image").removeClass('wallCon-active')
+                        }
+                        else if(slider.inTransit){
                             setTimeout(intervalImageHidden,5000)
                             return
                         }else{
@@ -406,5 +420,42 @@
         })
     </script>
     <script src="/static/plus/js/carousel.js"></script>
+    <script>
+        $(function($){
+            var clearAlertGuestsInfoPanel = null
+            $.get('/api/wall/guests?username=<%= username %>',function(data){
+                if(data != '-1') {
+                    config.guests = data
+                    var html = `<div class="guestsCarousel" data-gap="80"><figure><img src="/static/image/avatar_default.jpg" alt="PorYoung" title="HIFI" data-content="HIFI Developer" data-title="Developer"><i><span>Name:HIFI</span><span>Welcome to HIFI</span></i>`
+                    config.guests.forEach(function(item){
+                        html += `<img src="${item.avatarSrc}" alt="${item.name}" title="${item.name}" data-content="${item.content}" data-title="${item.title}"><i><span>Name:${item.name}</span><span>${item.title}</span></i>` 
+                    })
+                    html += '</figure></div>'
+                    $('#w-guests').append(html)
+                    bindGuestsCarousel()
+
+                    $('.guestsCarousel').children('figure').children('img').on('click',function(){
+                        clearTimeout(guestsCarouselTimer)
+                        var html = `<div class="alertGuestsInfoPanel">
+                            <p><img src="${$(this).attr('src')}"></p>
+                            <p>Name:${$(this).attr('title')}</p>
+                            <p>Title:${$(this).attr('data-title')}</p>
+                            <p>cotent:${$(this).attr('data-content')}</p>
+                        </div>`
+                        clearAlertGuestsInfoPanel = myLoading("INFO:",html)
+                        $('.alertGuestsInfoPanel').parent().parent().removeAttr('style').parent().css({
+                            display:'flex',
+                            'justify-content':'center',
+                            'align-items':'center'
+                        })
+                        $('.alertGuestsInfoPanel').parent().parent().parent().on('click',function(){
+                            clearAlertGuestsInfoPanel()
+                            setGuestsTimeoutRotate()
+                        })
+                    })
+                }
+            })
+        })
+    </script>
 </body>
 </html>

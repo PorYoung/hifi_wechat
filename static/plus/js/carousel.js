@@ -41,7 +41,6 @@ var Slider = function () {
     this.activeImg = el.getElementsByClassName(activeImgClass);
     this.activeText = el.getElementsByClassName(activeTextClass);
     this.images = el.getElementsByClassName(imgClass+'-img');
-console.log(this.images.length)
     document.getElementById('left').addEventListener('click', this.prev.bind(this));
 
     document.getElementById('right').addEventListener('click', this.next.bind(this));
@@ -244,7 +243,6 @@ console.log(this.images.length)
   };
 
   Slider.prototype.next = function next() {
-    console.log(this.inTransit)
     if (this.inTransit) return;
     var nextId = +this.activeImg[0].dataset.id + 1;
     if (nextId > this.images.length) nextId = 1;
@@ -309,3 +307,74 @@ function stopAutoSlide() {
 // sliderEl.addEventListener('mousemove', stopAutoSlide);
 // sliderEl.addEventListener('touchstart', stopAutoSlide);
 // timer = setTimeout(autoSlide,15000);
+
+
+/*****guests carousel ******/
+var bindGuestsCarousel = function () {
+  var carousels = document.querySelectorAll('.guestsCarousel');
+  for (var i = 0; i < carousels.length; i++) carousel(carousels[i]);
+}
+var setGuestsTimeoutRotate = null;
+var guestsCarouselTimer = null;
+function carousel(root) {
+  var figure = root.querySelector('figure'),
+      images = figure.querySelectorAll('img'),
+      tags = figure.querySelectorAll('i'),
+      n = images.length,
+      gap = root.dataset.gap || 0,
+      bfc = 'bfc' in root.dataset,
+      theta = 2 * Math.PI / n,
+      currImage = 0;
+  setupCarousel(n, parseFloat(getComputedStyle(document.querySelector('.wallCon')).width));
+  window.addEventListener('resize', function () {
+    setupCarousel(n, parseFloat(getComputedStyle(document.querySelector('.wallCon')).width));
+  });
+  function setupCarousel(n, s) {
+    var apothem = s / (2 * Math.tan(Math.PI / n));
+    figure.style.transformOrigin = '50% 50% ' + -apothem + 'px';
+
+    for (var i = 0; i < n; i++) {
+      images[i].style.padding = gap + 'px';
+    }for (i = 1; i < n; i++) {
+      images[i].style.transformOrigin = '50% 50% ' + -apothem + 'px';
+      images[i].style.transform = 'rotateY(' + i * theta + 'rad)';
+      tags[i].style.transformOrigin = '50% 50% ' + -apothem + 'px';
+      tags[i].style.transform = 'rotateY(' + i * theta + 'rad)';
+    }
+    if (bfc) for (i = 0; i < n; i++) {
+      images[i].style.backfaceVisibility = 'hidden';
+    }
+    rotateCarousel(currImage);
+  }
+  function rotateCarousel(imageIndex) {
+    figure.style.transform = 'rotateY(' + imageIndex * -theta + 'rad)';			
+    if(imageIndex%n == 0) {
+      images[images.length - 1].style.padding = '80px';
+      if(n > 1) images[imageIndex%n + 1].style.padding = '80px';
+      images[imageIndex%n].style.transition = 'all 1s';				
+      images[imageIndex%n].style.padding = '0';
+    }else{
+      if(imageIndex%n < 0){
+        images[imageIndex%n + images.length - 1].style.padding = '80px'
+        if(imageIndex%n == -1) images[0].style.padding = '80px'
+        else if(n > 1) images[imageIndex%n + images.length + 1].style.padding = '80px'	
+        images[imageIndex%n + images.length].style.transition = 'all 1s';				
+        images[imageIndex%n + images.length].style.padding = '0';
+      }else{
+        if(imageIndex%n == images.length - 1) images[0].style.padding = '80px'
+        else if(n > 1) images[imageIndex%n + 1].style.padding = '80px'	
+        images[imageIndex%n - 1].style.padding = '80px'
+        images[imageIndex%n].style.transition = 'all 1s';				
+        images[imageIndex%n].style.padding = '0';
+      }
+    }
+    
+  }
+  if(!setGuestsTimeoutRotate) setGuestsTimeoutRotate = function(){
+    clearTimeout(guestsCarouselTimer)
+    currImage++;
+    rotateCarousel(currImage);
+    guestsCarouselTimer = setTimeout(setGuestsTimeoutRotate,3000)
+  }
+  if(!guestsCarouselTimer) guestsCarouselTimer = setTimeout(setGuestsTimeoutRotate,3000)
+}

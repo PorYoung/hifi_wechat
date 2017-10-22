@@ -5,6 +5,7 @@ const router = express.Router()
 
 router
 .get('/wall/guests',Permission.loginRequire,Wall.getGuests)
+.post('/wall/deleteGuest',Permission.loginRequire,Wall.deleteGuest)
 .post('/wall/guests',Permission.loginRequire,Wall.saveGuests)
 .post('/wall/uploadAvatar',Permission.loginRequire,Wall.uploadAvatar)
 

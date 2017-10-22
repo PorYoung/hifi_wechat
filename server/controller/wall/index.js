@@ -9,15 +9,15 @@ export default class {
     }
     static async screen(req,res,next){
         //读取用户设置参数，进行主页面渲染
-        return res.render('screen')
+        return res.render('screen',{
+            username:req.session.username
+        })
     }
 
     static async getGuests(req,res,next){
         let username = req.query.username
-        console.log(username)
         if(!username) return res.send('-1')
         let wall = await db.wall.findOne({username:username},{guests:1,_id:0})
-        console.log(wall)
         if(!wall.guests || wall.guests.length == 0) return res.send('-1')
         return res.send(wall.guests)
     }
@@ -32,10 +32,19 @@ export default class {
         return res.send('1')
     }
 
+    static async deleteGuest(req,res,next){
+        let info = req.body
+        if(!info || !info.guestId || !info.username) return res.send('-1')
+        let query = await db.wall.findOneAndUpdate({username:info.username},{$pull:{guests:{guestId:info.guestId}}},{upsert:false,new:true})
+        if(!query) return res.send('-1')
+        fs.unlink(path.join(__dirname,'/../../..' + info.avatarSrc),(err)=>{
+            if(err) console.log(err)
+            return res.send('1')
+        }) 
+    }
+
     static async uploadAvatar(req,res,next){
-            // let date = new Date().getTime()
             let guestId = req.query.guestId
-            console.log(guestId)
             let filename = 'guests_avatar_' + guestId  + '.png'
             let form = new formidable.IncomingForm()
             form.uploadDir = path.join(__dirname,'/../../../static/image/guests')

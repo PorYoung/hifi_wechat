@@ -78,3 +78,4 @@ Object{
 10.MONGO对数组复杂的操作
     找到username存在且guests数组中存在guestsId为info.guestId的数据，并将其修改
     db.wall.findOneAndUpdate({$and:[{username:info.username},{guests:{$elemMatch:{guestId:info.guestId}}}]},{$set:{"guests.$":info}},{upsert:false,new:true})
+11.bug:修改头像后浏览器存在缓存，尝试转换urlData解决
