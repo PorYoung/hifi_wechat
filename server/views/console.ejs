@@ -10,7 +10,6 @@
     <title>console</title>
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/myUtils.js"></script>
-    <!-- <script src="/static/plus/js/jquery.popuplayer.js"></script> -->
     <script src="/static/plus/js/jquery.popuplayer.js"></script>
     <script src="/static/plus/js/cropbox.js"></script>
     <script src="/static/js/myLoading.js"></script>
@@ -127,7 +126,7 @@
             //初始化加载设置
             const config = {
                 guests: [],
-                QR_src:null
+                QRSrc:null
             }
             $.get('/api/wall/guests?username=<%= username %>',function(data){
                 if(data != '-1') {

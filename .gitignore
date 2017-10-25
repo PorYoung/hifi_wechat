@@ -6,3 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 .vscode/
 .idea/
+static/image/guests/
+static/image/message/
+static/image/users/
+server/access_token.txt
+server/jsapi_ticket.txt
