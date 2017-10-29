@@ -121,3 +121,30 @@
                     $("#notification").html("").hide("fast");
                 },3000);
     }
+
+    var imageHandle = {
+        getDataURL: function (width,height,image)
+        {
+            var width = width,
+                height = height,
+                canvas = document.createElement("canvas")
+            canvas.width = width
+            canvas.height = height
+            var context = canvas.getContext("2d");
+            context.drawImage(image,0,0,width,height)
+            document.documentElement.appendChild(canvas)
+            var imageData = canvas.toDataURL('image/png');
+            return imageData;
+        },
+        getBlob: function(imageData)
+        {
+            if(!imageData) var imageData = this.getDataURL();
+            var b64 = imageData.replace('data:image/png;base64,','');
+            var binary = atob(b64);
+            var array = [];
+            for (var i = 0; i < binary.length; i++) {
+                array.push(binary.charCodeAt(i));
+            }
+            return  new Blob([new Uint8Array(array)], {type: 'image/png'});
+        }
+    }

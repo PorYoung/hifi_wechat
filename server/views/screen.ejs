@@ -430,7 +430,7 @@
                     config.guests = data
                     var html = `<div class="guestsCarousel" data-gap="80"><figure><img src="/static/image/avatar_default.jpg" alt="PorYoung" title="HIFI" data-content="HIFI Developer" data-title="Developer"><i><span>Name:HIFI</span><span>Welcome to HIFI</span></i>`
                     config.guests.forEach(function(item){
-                        html += `<img src="${item.avatarSrc}" alt="${item.name}" title="${item.name}" data-content="${item.content}" data-title="${item.title}"><i><span>Name:${item.name}</span><span>${item.title}</span></i>` 
+                        html += `<img src="${item.avatarSrc}" alt="${item.name}" title="${item.name}" data-content="${item.introduction}" data-title="${item.title}"><i><span>Name:${item.name}</span><span>${item.title}</span></i>` 
                     })
                     html += '</figure></div>'
                     $('#w-guests').append(html)

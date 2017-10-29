@@ -8,7 +8,7 @@ export default class {
     //用户
     if(req.session.username){
       console.log(req.session.username)
-    }else if(req.url == '/wall' || req.url == '/wall/screen'){
+    }else if(!!req.url.match(/^\/wall/)){
       return res.redirect('/login')
     }
     //用户的用户

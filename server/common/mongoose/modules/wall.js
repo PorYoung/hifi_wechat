@@ -5,6 +5,9 @@ const wallSchema = new mongoose.Schema({
         type:String,
         require:[true,'username is necessary']
     },
+    flags: {},
+    votes:Array,
+    activeVote:{},
     guests: Array,
     QRSrc: String,
     QRTicket: String

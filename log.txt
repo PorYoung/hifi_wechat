@@ -80,3 +80,33 @@ Object{
     db.wall.findOneAndUpdate({$and:[{username:info.username},{guests:{$elemMatch:{guestId:info.guestId}}}]},{$set:{"guests.$":info}},{upsert:false,new:true})
 11.bug:修改头像后浏览器存在缓存，尝试转换urlData解决   (solved)
 12.路由鉴权需要设计
+13.jquery ajax 增加onprogress事件
+    xhr:function(){
+        var xhr = $.ajaxSettings.xhr();
+        if(onprogress && xhr.upload) {
+            xhr.upload.addEventListener("progress" , onprogress, false);
+            return xhr;
+        }
+    }
+
+14.vote 数据库结构
+    votes:[{
+        username: '',
+        voteId: '',
+        settings: {
+            check: '1' || '0',
+            type: '1' || '0',
+            display: '1' || '0'
+        },
+        options:{
+            1:{
+                id:'',
+                content:'',
+                imgSrc:''
+            },
+            2:{
+
+            }
+        }
+
+    }]
