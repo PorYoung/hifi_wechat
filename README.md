@@ -23,30 +23,53 @@ There only one internet company provides this kind of service called HI Activity
 ### Project Structure
 ***
 |-config
+
 |---|-wechat.js
+
 |-node_modules
+
 |-server
+
 |---|-common
+
 |---|-controller
+
 |---|-model
+
 |---|-router
+
 |---|-socket
+
 |---|-views
+
 |---|-access_token.txt
+
 |---|-jsapu_token.txt
+
 |---|-index.js
+
 |-static
+
 |---|-css
+
 |---|-js
+
 |---|-fonts
+
 |---|-image
+
 |---|-plus
+
 |---|-emoji
+
 |-bin
+
 |---|-dev-server.js
+
 |-package.json
 
 [view in Github](https://github.com/PorYoung/hifi_wechat)
+
 > directory **server**
 * directory **commom** includes files that connect to  mongodb database and some config files.
 * directory **controller** includes files which handle the main logic of the program on the server end.
@@ -57,7 +80,7 @@ There only one internet company provides this kind of service called HI Activity
 * **access_token.txt** and **jsapi.token** saved the tickes that needed to correspond to Wechat server.
 
 > directory **static**
-A static server includes static files.
+  A static server includes static files.
 
 ### Docs and Description
 ***
