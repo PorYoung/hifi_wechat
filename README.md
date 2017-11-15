@@ -7,7 +7,7 @@ Since the development of the smart devices and moblie web technology, the penetr
 
 Wether enterprise or college, there are many assembles or activities.How about putting the smart devices and activities together?That's must be more fun!
 
-There is only one internet company provides this kind of service called HI Activity in present.However it seems that HI Activity is specially designed for enterprises, and if you want to use more useful and enjoyable functions you should pay more for it.Not only the organizer but also the audiences who want to participate in the activing carnival have to pay for their subscribed special functions.For our students, it is too expensive to use it.So, HIFI born.
+There is only one internet company provides this kind of service called HI Activity in the present.However it seems that HI Activity is specially designed for enterprises, and if you want to use more useful and enjoyable functions you should pay more for it.Not only the organizer but also the audiences who want to participate in the activing carnival have to pay for their subscribed special functions.For our students, it is too expensive to use it.So, HIFI born.
 
 ### Tech Stacks
 ***
