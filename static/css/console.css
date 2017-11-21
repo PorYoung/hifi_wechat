@@ -30,6 +30,10 @@ html body, .container{
 flex-grow: 2;
 text-align: center;
 }
+.c-l-tile > img{
+    width: 50%;
+    height: 50%;
+}
 .c-l-tile > div{
     width: 60%;
     border: 1px solid #cccccc;
@@ -288,7 +292,18 @@ text-align: center;
     align-items: center;
     width: 100%;
     border-bottom: 1px solid #ccc;
+    text-align: center;
 }
+.c-r-s-panel-vote-item-header div:first-child{
+    flex: 6;
+}
+.c-r-s-panel-vote-item-header div:last-child{
+    flex: 4;
+    display: inline-flex;
+    justify-content: space-around;
+    font-size: 20px;
+}
+
 .c-r-s-panel-vote-item-info{
     display: none;
     opacity: 0;
@@ -370,8 +385,66 @@ text-align: center;
     display: flex;
     justify-content: space-around;
     align-items: center;
+    position: relative;
 }
 .vote-options-image{
     padding: 1px 5px;
     cursor: pointer;
+}
+.vote-options-delete{
+    position: absolute;
+    right: -15px;
+}
+
+#c-r-s-panel-host-panel{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 80%;
+    margin: 0 auto;
+    color: #d17c78;    
+}
+
+#c-r-s-panel-host-input,#c-r-s-panel-host-input-number{
+    flex: 1;
+    max-height: 100px;
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+#c-r-s-panel-host-input > input,#c-r-s-panel-host-input-number > input{
+    font-size: 3em;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid;
+    color: #d17c78;
+    background: transparent;
+}
+#c-r-s-panel-host-input > input{
+    width: 100%;
+    padding: 5px 1em 5px 0;
+}
+#c-r-s-panel-host-input-number > input{
+    text-align: center;
+}
+#c-r-s-panel-host-input > i {
+    position: absolute;
+    right: 0;
+    font-size: 2em;
+    color: green;
+    cursor: pointer;
+}
+#c-r-s-panel-host-input > i:first-child {
+    right: 0;
+    font-size: 1em;
+    color: #d17c78;
+    cursor: default;
+    bottom: -5px;
+}
+#c-r-s-panel-host-input-number > input{
+    width: auto;
 }

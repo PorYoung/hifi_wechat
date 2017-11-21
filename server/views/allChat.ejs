@@ -11,6 +11,8 @@
     <!--jquery-emoji-->
     <link rel="stylesheet" href="/static/emoji/lib/css/jquery.mCustomScrollbar.min.css"/>
     <link rel="stylesheet" href="/static/emoji/src/css/jquery.emoji.css"/>
+    <link href="/static/plus/css/jquery.popuplayer.css" rel="stylesheet">
+    <link href="/static/plus/css/blower-loading.css" rel="stylesheet">
     <!--[if lt IE 9]>
     <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
@@ -250,8 +252,138 @@
             filter: blur(1px);
             border: 1px solid rgb(112, 22, 28)
         }
+        #loadingWrap{
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgb(250, 210, 60);
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 9999;
+        }
+        .filler{
+            animation: loading 3s forwards;
+        }
+        .filler span{
+            animation: loadingcolor 3s alternate infinite;
+        }
+        .marker_container {
+            animation: wowrotate 3s infinite;
+        }
+        @keyframes loading{
+            0%{
+                width: 0;
+            }
+            100%{
+                width: 100%
+            }
+        }
+        @keyframes loadingcolor{
+            0%{
+                color:white;
+            }
+            25%{
+                opacity: .5
+            }
+            50%{
+                opacity:.8
+            }
+            75%{
+                opacity:.7
+            }
+            100%{
+                color:darkorange;
+                opacity:1;
+            }
+        }
+
+        #votePanel{
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            background: url(/static/image/default_background.jpg);
+            background-size: 100vh 100%;
+            height: 100vh;
+            text-overflow: ellipsis;
+            box-shadow: -1px 0px 5px 2px rgba(0, 0, 0, 0.3);
+        }
+        #votePanel > p, #votePanel > div{
+            height: 100px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            overflow:hidden;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+            transition: all 1s;
+        }
+        #votePanel img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(255,255,255,.5)
+        }
+        #votePanel #voteCloseBtn{
+            color: darkorange;
+            width: 50px;
+            height: 50px;
+            font-size:2em;
+            position: absolute;
+            bottom: 0;
+            left: calc(50% - 25px);
+            border-radius: 50%;
+        }
+        #votePanel::-webkit-scrollbar{
+            width: 3px;
+        }
+        #votePanel::-webkit-scrollbar-track{
+            background: #ffffff;
+        }
+        #votePanel::-webkit-scrollbar-thumb{
+            /* background: #868686; */
+            background: #FFA54F;
+            border-radius: 2em;
+        }
+        #voteSubmit{
+             border-bottom:1px solid rgb(57,138,202);
+             text-align:center;
+             height:auto !important;
+             position:fixed; 
+             bottom:0;
+             width: 70%;
+             background:rgba(0, 0, 0, 0.18);
+        }
+        #voteSubmit > span:first-child{
+            flex:6;padding:3px 5px;
+            background:rgba(57,138,202,.7);
+            border-radius:0 2em 0 0;
+        }
+        #voteSubmit > span:last-child{
+             flex:4;
+             color:white;
+        }
     </style>
 </head>
+<!--全屏加载-->
+<div id="loadingWrap">
+        <div id="loadingContainer">
+            <div class="loadingbar">
+                <div class="marker_container">
+                    <div class="marker"></div>
+                    <div class="marker"></div>
+                    <div class="marker"></div>
+                    <div class="marker"></div>
+                </div>
+                <div class="filler_wrapper">
+                    <div class="filler">
+                        <span class="value">waiting...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 <body oncontextmenu="return false;" style="height:100vh">
 <header id="header">
     <img src="<%= headimgurl %>" alt="<%= nickname%>" title="<%= nickname%>">
@@ -277,7 +409,7 @@
 <!--功能键-->
 <div id="plusPanel">
     <i class="fa fa-photo" id="wexinImage" aria-hidden="true"></i>
-    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+    <i class="fa fa-bar-chart" id="voteShow" aria-hidden="true"></i>
 </div>
 <!--通知-->
 <div id="notification"></div>
@@ -330,6 +462,68 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="/static/js/myUtils.js"></script>
 <script src="/static/js/weixin.js"></script>
+<script src="/static/plus/js/jquery.popuplayer.js"></script>
+<!--div id="votePanel" data-vote-id="12345" style="top:0;width:70vw;position:absolute;z-index:9999;">
+    <div style="border-bottom:1px solid rgb(57,138,202);text-align:center;">
+        <span style="flex:3;padding:3px 5px;background:rgba(57,138,202,.7);border-radius:0 2em 2em 0;">投票主题</span>
+        <span style="flex:7;color:white">title</span>
+    </div>
+    <p data-option-id="1">
+        <span>content</span>
+        <i><img src="/static/image/logo.png"></i>
+    </p>
+    <p data-option-id="2">
+        <span>content</span>
+        <i><img src="/static/image/logo.png"></i>
+    </p>
+    <p data-option-id="3">
+        <span>content</span>
+        <i><img src="/static/image/logo.png"></i>
+    </p>
+    <p data-option-id="3">
+        <span>content</span>
+        <i><img src="/static/image/logo.png"></i>
+    </p>
+    <p data-option-id="3">
+        <span>content</span>
+        <i><img src="/static/image/logo.png"></i>
+    </p>
+    <p data-option-id="3">
+        <span>content</span>
+        <i><img src="/static/image/logo.png"></i>
+    </p>
+    <div id="voteSubmit">
+        <span>选好了吗😉</span>
+        <span>okay!👌</span>
+    </div>
+</div-->
+
+<!--script>
+    $(function($){
+        var flag = 1
+        $("#votePanel").children("p").click(function(){
+            if($(this).attr("data-vote-choose") == "1"){
+                $(this).attr({"data-vote-choose":"0"}).css({
+                    background: "initial",
+                    transform: "scale(1,1)"
+                },200)
+            }else{
+                if(flag == "0"){
+                    $("[data-vote-choose='1']").attr({"data-vote-choose":"0"}).css({
+                        background: "initial",
+                        transform: "scale(1,1)"
+                    },200)
+                }
+                $(this).attr({"data-vote-choose":"1"}).css({
+                    background: "rgba(100, 205, 100, 0.3)",
+                    transform: "scale(1.1,1.1)"
+                },200)
+            }
+            
+        })
+    })
+</script-->
+
 <script>
     //globle
     //处理socket通信
@@ -341,38 +535,25 @@
                 previewArr:[]
     };
     wx.config({
-    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-    appId: '<%= appId %>', // 必填，公众号的唯一标识
-    timestamp: '<%= timestamp %>', // 必填，生成签名的时间戳
-    nonceStr: '<%= nonceStr %>', // 必填，生成签名的随机串
-    signature: '<%= signature %>',// 必填，签名，见附录1
-    jsApiList: [
-        'checkJsApi',
-        'chooseImage',
-        'previewImage',
-        'uploadImage',
-        'downloadImage',
-        'getLocalImgData'
-    ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
-});
+        debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+        appId: '<%= appId %>', // 必填，公众号的唯一标识
+        timestamp: '<%= timestamp %>', // 必填，生成签名的时间戳
+        nonceStr: '<%= nonceStr %>', // 必填，生成签名的随机串
+        signature: '<%= signature %>',// 必填，签名，见附录1
+        jsApiList: [
+            'checkJsApi',
+            'chooseImage',
+            'previewImage',
+            'uploadImage',
+            'downloadImage',
+            'getLocalImgData'
+        ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+    });
 </script>
 <script>
     wx.ready(function(){
-            wx.checkJsApi({
-                jsApiList: [
-                 'chooseImage',
-                 'previewImage',
-                 'uploadImage',
-                 'downloadImage',
-                 'getLocalImgData'
-                ],
-                success: function (res) {
-                    console.log(JSON.stringify(res));
-                }
-            })
             //图片接口
             //拍照、本地选图
-           
             $("#wexinImage").click(function(event){
                 wx.chooseImage({
                     count: 1,
@@ -438,7 +619,18 @@
 </script>
 <script>
     $(function ($) {
-    //读取allChat消息
+        setTimeout(function(){
+                $("#loadingWrap").animate({
+                opacity:0
+            },1000)
+            setTimeout(function(){
+                $("#loadingWrap").css({
+                    display: 'none'
+                })
+            },1100)
+        },1000)
+        
+        //读取allChat消息
         //0未加载 1加载完成 2无更多消息
         var loadMessageFlag = 0;
         //定义函数：加载消息
@@ -625,13 +817,59 @@
         //socket.io
         // var allChat = io("/allChat");
         allChat.on("connect", function(){
-            allChat.emit("notification", {from:"<%= nickname %>", content: "new connection"})  
+            allChat.emit("notification", {from:"<%= nickname %>",openid:"<%= openid %>", content: "new connection"})  
         })
         allChat.on("notification", function(msg){
             showNotification(msg.content);
         })
         allChat.on("public_message", function (msg) {
             $("#listPanel").append(messageBoxCompiled(msg));
+        })
+        allChat.on("vote_check",function(msg){
+            var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
+            var clearMyLoading = myLoading("Waiting...",html)
+            if(msg.res == "1"){
+                //未投票
+                voteItem = {
+                    username: "<%= username %>",
+                    voteId: $("#votePanel").attr("data-vote-id"),
+                    openid: "<%= openid %>",
+                    nickname: "<%= nickname %>"
+                }
+                var items = document.querySelector("#votePanel").querySelectorAll("[data-vote-choose='1']")
+                for(var i = 0;i < items.length;i++){
+                    var key = items[i].dataset.optionId
+                    voteItem[key] = key
+                }
+                allChat.emit("vote",voteItem)
+                clearMyLoading()
+                html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                clearMyLoading = myLoading("您贡献上了自己的一票🙂",html)
+                setTimeout(function () {
+                    clearMyLoading()
+                },1200)
+            }else{
+                //已投票或错误
+                clearMyLoading()
+                html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
+                clearMyLoading = myLoading("您已经交出自己的票票了😏",html)
+                setTimeout(function () {
+                    clearMyLoading()
+                },1200)
+            }
+            $("#voteSubmit").off().animate({
+                background:"rgba(57,138,202,.3)"
+            },1000)
+            $("#votePanel").children("p").off()
+        })
+        allChat.on("vote",function(info){
+            if(!!info && info.res instanceof Array){
+                for(var i = 0;i < info.res.length;i++){
+                     $("#votePanel").children("[data-option-id = '"+ info.res[i].id +"']").attr({
+                         "data-vote-count":info.res[i].count
+                     }).children(".voteCount").html(info.res[i].count)
+                }
+            } 
         })
         $("#sendBtn").click(function () {
             var msg = {
@@ -698,7 +936,74 @@
                 });
             },1);
         })
-        
+
+        $.get('/api/wall/activeVote?openid=<%= openid %>&username=<%= username %>',function(data){
+            if(!!data && data != '-1'){
+                var html = `<div id="votePanel" data-vote-id="${data.voteId}">
+                    <div style="border-bottom:1px solid rgb(57,138,202);text-align:center;">
+                        <span style="flex:3;padding:3px 5px;background:rgba(57,138,202,.7);border-radius:0 2em 2em 0;">投票主题</span>
+                        <span style="flex:7;color:white;">${data.title}</span>
+                    </div>
+                    `
+                for(var i = 0;i < data.options.length;i++){
+                    html+=`<p data-option-id="${data.options[i].id}"  data-vote-count="${data.options[i].count || 0}">
+                        <span>${data.options[i].content}</span>
+                        <span class="voteCount">${data.options[i].count || 0}</span>
+                        `
+                    if(data.settings.type == "0"){
+                        html += `<i><img src="${data.options[i].imgsrc}"></i></p>`
+                    }
+                }
+                html += `<div id="voteSubmit">
+                    <span>选好了吗😉</span>
+                    <span>okay!👌</span></div></div>`
+                //显示投票界面
+                $('#voteShow').PopupLayer({
+                    content: html, // 内容，可以传入纯文本或类名或html
+                    target: "body", // 把弹出层添加到的目标节点
+                    to: "right",   // 向哪个方向展开
+                    screenRatio: .7, // 占屏幕百分比
+                    blur: true, // 是否开启毛玻璃效果
+                    blurAreas: "#listPanel",    //默认body > *
+                    color: "#000", // 文本颜色
+                    backgroundColor: "#eee", // 背景颜色
+                    contentToggle: false, // 点击content是否关闭弹出层
+                    // closeBtn: null,  // 指定关闭按钮
+                    voteSettings: data.settings
+                    // closeCallbackBefore: null,   //关闭前执行的函数
+                    // openCallback: null, // 展开的回调
+                    // closeCallback: null // 关闭的回调
+                })
+                $("#votePanel").children("p").on("click",function(){
+                    if($(this).attr("data-vote-choose") == "1"){
+                        $(this).attr({"data-vote-choose":"0"}).css({
+                            background: "initial",
+                            transform: "scale(1,1)"
+                        },200)
+                    }else{
+                        if(data.settings.check == "0"){
+                            $("[data-vote-choose='1']").attr({"data-vote-choose":"0"}).css({
+                                background: "initial",
+                                transform: "scale(1,1)"
+                            },200)
+                        }
+                        $(this).attr({"data-vote-choose":"1"}).css({
+                            background: "rgba(100, 205, 100, 0.3)",
+                            transform: "scale(1.1,1.1)"
+                        },200)
+                    }
+                })
+                $("#voteSubmit").click(function(){
+                    //验证是否投过票
+                    var info = {
+                        nickname: "<%= nickname %>",
+                        openid: "<%= openid %>"
+                    }
+                    allChat.emit("vote_check",info)
+                })
+            }
+        })
+
         $('body').on({
             'click':function(e){
                 var target = e.target;
@@ -720,7 +1025,6 @@
             }
         })
     })
-
 </script>
 </body>
 </html>

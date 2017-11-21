@@ -13,6 +13,7 @@
     <script src="/static/plus/js/jquery.popuplayer.js"></script>
     <script src="/static/plus/js/cropbox.js"></script>
     <script src="/static/js/myLoading.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         .popup-layer-content{
             display: flex;
@@ -129,6 +130,7 @@
                 guests: [],
                 QRSrc:null
             }
+            var IO = io('/allChat')
             $.get('/api/wall/flags?username=<%= username %>',function(data){
                 if(!!data && data != '-1'){
                     Object.assign(config.flags,data)
@@ -152,7 +154,7 @@
                 }
             })
             $.get('/api/wall/guests?username=<%= username %>',function(data){
-                if(data != '-1') {
+                if(data != '-1' && data instanceof Array) {
                     config.guests = data
                     data.forEach(function(item){
                         var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${item.guestId}"><img src="${item.avatarSrc}" title="${item.name}"><i class="fa fa-remove c-r-s-panel-guests-item-delete"></i></div>`
@@ -168,7 +170,7 @@
                 }
             })
             $.get('/api/wall/votes?username=<%= username %>',function(data){
-                if(!!data && data != '-1'){
+                if(!!data && data != '-1' && data instanceof Array){
                     var votes = data
                     votes.forEach(function(item){
                         var html = `
@@ -222,17 +224,17 @@
                                         for(var i in item.options){
                                             str += `
                                                 <p data-vote-options-id="${item.options[i].id}">
-                                                    选项${i}:
+                                                    <span>选项${item.options[i].id}:</span>
                                                     <label class="vote-options-image" title="建议上传尺寸为100*100的图片" data-imgsrc="${item.options[i].imgsrc}">`
                                                         if(item.settings.type == '1'){
                                                             str += `<img src="${item.options[i].imgsrc}" alt="image" width="30px" height="30px" style="display:none;">`
                                                         }
                                                         else str += `<img src="${item.options[i].imgsrc}" alt="image" width="30px" height="30px">`
                                                         str += `
-                                                        <input type="file" name="voteOptions${i}Image" style="display:none">
+                                                        <input type="file" name="voteOptions${item.options[i].id}Image" style="display:none">
                                                     </label>
                                                     <input name="voteOption${i}Content" value="${item.options[i].content}">`
-                                            if(Number.parseInt(i) > 2){
+                                            if(parseInt(item.options[i].id) > 2){
                                                 str += '<i class="fa fa-remove vote-options-delete"></i>'
                                             }
                                             str += '</p>'
@@ -258,6 +260,14 @@
                         headerBtn.children('.vote-save-btn').on('click',voteSave)
                         headerBtn.children('.vote-delete-btn').on('click',voteDelete)
                         headerBtn.children('.vote-switch-btn').on('click',voteSwitch)
+                        $('.vote-options-delete').click(optionsDelete)
+                    })
+                }
+            })
+            $.get('/api/wall/activeVote?username=<%= username %>',function(data){
+                if(!!data && data != '-1'){
+                    $('[data-vote-id="'+data.voteId+'"]').attr({'data-open-flag':'1'}).children('.c-r-s-panel-vote-item-header').children('div').last().children('.vote-switch-btn').removeClass('fa-toggle-off').addClass('fa-toggle-on').css({
+                        color: 'rgba(100,205,100,.7)'
                     })
                 }
             })
@@ -315,10 +325,13 @@
                         $('[data-guest-id="'+info.guestId+'"]').off().remove()
                         clearMyLoading()
                         html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
-                        clearMyLoading = myLoading("Success",html);
+                        clearMyLoading = myLoading("Success",html)
+                        //向大屏推送(-1 delete)
+                        info.type = "-1"
+                        IO.emit("guest",info)
                         setTimeout(function () {
-                            clearMyLoading();
-                        },1200); 
+                            clearMyLoading()
+                        },1200)
                     }else{
                         clearMyLoading();
                         html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
@@ -351,9 +364,9 @@
                 ['#c-r-s-guests','#c-r-s-panel-guests','fa-user-circle-o','fa-user-circle'],
                 ['#c-r-s-vote','#c-r-s-panel-vote','fa-bar-chart','fa-line-chart'],
                 ['#c-r-s-lottery','#c-r-s-panel-lottery','fa-gift','fa-smile-o'],
-                ['#c-r-s-guests2','#c-r-s-panel-guests2','fa-user-circle-o','fa-user-circle'],
-                ['#c-r-s-vote2','#c-r-s-panel-vote2','fa-bar-chart','fa-line-chart'],
-                ['#c-r-s-lottery2','#c-r-s-panel-lottery2','fa-gift','fa-smile-o']
+                ['#c-r-s-host','#c-r-s-panel-host','fa-user-circle-o','fa-user-circle'],
+                // ['#c-r-s-sign','#c-r-s-panel-sign','fa-bar-chart','fa-line-chart'],
+                // ['#c-r-s-video','#c-r-s-panel-video','fa-gift','fa-smile-o']
             ]
             var menuEvent = new iconEvent({
                 idActiveClass: 'c-l-active',
@@ -379,6 +392,111 @@
                 extraEvent: addIconAnim
             }).iconClickBind().iconHoverBind()
 
+            function switchFlag(e){
+                var type = e.data.type
+                var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Saving...</span>"
+                var clearMyLoading = myLoading("Saving...",html)
+                var info = {
+                    username: "<%= username %>",
+                    flag: {}
+                }
+                if($(this).hasClass('fa-toggle-off')){
+                    if(type == "guests"){
+                        info.flag = {
+                            guests: 1
+                        }
+                    }else if(type == "vote"){
+                        info.flag = {
+                            vote: 1
+                        }
+                    }else if(type == "lottery"){
+                        info.flag = {
+                            lottery: 1
+                        }
+                    }                           
+                    $.post('/api/wall/flags',info,function(res){
+                        if(!!res && res != '-1'){
+                            if(type == "guests") {
+                                config.flags.guests = 1
+                                $('#guests-flag').removeClass('fa-toggle-off').addClass('fa-toggle-on')
+                                $('#c-r-s-guests').css({
+                                    'background-image':'linear-gradient(0,rgba(100,200,100,.5) 100%,transparent 0)'
+                                })
+                            }
+                            else if(type == "vote") {
+                                config.flags.vote = 1
+                                $('#vote-flag').removeClass('fa-toggle-off').addClass('fa-toggle-on')
+                                $('#c-r-s-vote').css({
+                                    'background-image':'linear-gradient(0,rgba(100,200,100,.5) 100%,transparent 0)'
+                                })
+                            }
+                            else if(type  == "lottery") {
+                                config.flags.lottery = 1
+                                $('#lottery-flag').removeClass('fa-toggle-off').addClass('fa-toggle-on')
+                                $('#c-r-s-lottery').css({
+                                    'background-image':'linear-gradient(0,rgba(100,200,100,.5) 100%,transparent 0)'
+                                })
+                            }
+                            clearMyLoading();
+                            html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                            clearMyLoading = myLoading("Success",html);
+                            setTimeout(function () {
+                                clearMyLoading();
+                            },1200); 
+                        }
+                    })
+                }else{  
+                    if(type == "guests"){
+                        info.flag = {
+                            guests: 0
+                        }
+                    }else if(type == "vote"){
+                        info.flag = {
+                            vote: 0
+                        }
+                    }else if(type == "lottery"){
+                        info.flag = {
+                            lottery: 0
+                        }
+                    }
+                    $.post('/api/wall/flags',info,function(res){
+                        if(!!res && res != '-1'){
+                            if(type == "guests") {
+                                config.flags.guests = 0
+                                $('#guests-flag').removeClass('fa-toggle-on').addClass('fa-toggle-off')
+                                $('#c-r-s-guests').css({
+                                    'background-image':'initial'
+                                })
+                            }
+                            else if(type == "vote") {
+                                config.flags.vote = 0
+                                $('#vote-flag').removeClass('fa-toggle-on').addClass('fa-toggle-off')
+                                $('#c-r-s-vote').css({
+                                    'background-image':'initial'
+                                })
+                            }
+                            else if(type  == "lottery") {
+                                config.flags.lottery = 0
+                                $('#lottery-flag').removeClass('fa-toggle-on').addClass('fa-toggle-off')
+                                $('#c-r-s-lottery').css({
+                                    'background-image':'initial'
+                                })
+                            }
+                            clearMyLoading();
+                            html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                            clearMyLoading = myLoading("Success",html);
+                            setTimeout(function () {
+                                clearMyLoading();
+                            },1200); 
+                        }
+                    })
+                }
+            }
+            
+            $('#guests-flag').click({type:'guests'},switchFlag)
+            $('#vote-flag').click({type:'vote'},switchFlag)
+            $('#lottery-flag').click({type:'lottery'},switchFlag)
+
             //查看、修改、添加宾客界面返回事件
             var guestsIconBackArr = [
                 ['#c-r-s-panel-guests-addbtn','#c-r-s-panel-guests-addnew','',''],
@@ -399,55 +517,7 @@
                     })
                 }
             }).iconHoverBind().iconClickBind()
-
-            $('#guests-flag').click(function(){
-                var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Saving...</span>"
-                var clearMyLoading = myLoading("Saving...",html)
-                var info = {
-                    username: "<%= username %>",
-                    flag: {}
-                }
-                if($(this).hasClass('fa-toggle-off')){
-                    info.flag = {
-                        guests:1
-                    }                    
-                    $.post('/api/wall/flags',info,function(res){
-                        if(!!res && res != '-1'){
-                            config.flags.guests = 1
-                            $('#guests-flag').removeClass('fa-toggle-off').addClass('fa-toggle-on')
-                            $('#c-r-s-guests').css({
-                                'background-image':'linear-gradient(0,rgba(100,200,100,.5) 100%,transparent 0)'
-                            })
-                            clearMyLoading();
-                            html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
-                            clearMyLoading = myLoading("Success",html);
-                            setTimeout(function () {
-                                clearMyLoading();
-                            },1200); 
-                        }
-                    })
-                }else{  
-                    info.flag = {
-                        guests:0
-                    }
-                    $.post('/api/wall/flags',info,function(res){
-                        if(!!res && res != '-1'){
-                            config.flags.guests = 0
-                            $('#guests-flag').removeClass('fa-toggle-on').addClass('fa-toggle-off')
-                            $('#c-r-s-guests').css({
-                                'background-image':'initial'
-                            })
-                            clearMyLoading();
-                            html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
-                            clearMyLoading = myLoading("Success",html);
-                            setTimeout(function () {
-                                clearMyLoading();
-                            },1200); 
-                        }
-                    })
-                }
-            })
-
+            
             //头像修改
             var cropboxHTML = `<div class="cropboxCloseWrap"><i class="cropboxClose">--</i><span>完成</span></div>
                 <div class="imageBox">
@@ -627,12 +697,15 @@
                                 var html = `<div class = "c-r-s-panel-guests-item" data-guest-id="${info.guestId}"><img src="${$('#c-r-s-panel-guests-addnew-avatar').attr('src')}" title="${$('#c-r-s-panel-guests-addnew-guestName').val()}""><i class="fa fa-remove c-r-s-panel-guests-item-delete"></i></div>`
                                 $('#c-r-s-panel-guests-list div:last-child').before(html).prev().on('click',showGuestInfo).on('mouseover',guestMouseOverEvent).on('mouseout',guestMouseOutEvent)
                             }
-                            clearMyLoading();
+                            clearMyLoading()
                             html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
-                            clearMyLoading = myLoading("Success",html);
+                            clearMyLoading = myLoading("Success",html)
                             setTimeout(function () {
-                                clearMyLoading();
-                            },1200); 
+                                clearMyLoading()
+                            },1200)
+                            //向大屏推送(1 save)
+                            info.type = "1"
+                            IO.emit("guest",info)
                         }
                     })
                 }
@@ -640,11 +713,13 @@
             })
 
             //查看、修改活动
+            $('#c-r-s-panel-vote-addbtn').on('click',voteAddNew)
             function optionsAddNew(){
-                var id = Number.parseInt($(this).prev().attr('data-vote-options-id')) + 1
+                $(this).parents('.c-r-s-panel-vote-item').attr({'data-save-flag':'0'})
+                var id = parseInt($(this).prev().attr('data-vote-options-id')) + 1
                 var html = `
                 <p data-vote-options-id="${id}">
-                    选项${id}:
+                    <span>选项${id}:</span>
                     <label class="vote-options-image" title="建议上传尺寸为100*100的图片" data-imgsrc="/static/image/avatar_default.jpg">
                         <i class="fa fa-image"></i>
                         <input type="file" name="voteOptions${id}Image" style="display:none">
@@ -655,7 +730,22 @@
                 `
                 $(this).before(html)
                 $(this).prev().children('.vote-options-image').children('input').change(chooseOptionsImage)
+                $(this).prev().children('.vote-options-delete').click(optionsDelete)
             }
+            function optionsDelete(){
+                $(this).parents('.c-r-s-panel-vote-item').attr({'data-save-flag':'0'})
+                var arr = $(this).parent().nextAll('p[data-vote-options-id]')
+                var id = parseInt($(this).parent().attr('data-vote-options-id'))
+                var that = $(this).parent()
+                for(var i = id;i < id + arr.length;i++){
+                    that = that.next()
+                    that.attr({
+                        'data-vote-options-id': i
+                    })
+                    that.children('span').html('选项'+i)
+                }
+                $(this).parent().remove()
+            }           
             function voteAddNew(){
                 if($('.c-r-s-panel-vote-item-info').hasClass('c-r-s-panel-vote-item-info-active')){
                     var flag = Number.parseInt($('.c-r-s-panel-vote-item-info-active').parent('.c-r-s-panel-vote-item').attr('data-save-flag'))
@@ -691,7 +781,7 @@
                         <div class="c-r-s-panel-vote-item-options">
                             <p>投票主题:<input name="voteTitle"></p>
                             <p data-vote-options-id="1">
-                                选项1:
+                                <span>选项1:</span>
                                 <label class="vote-options-image" title="建议上传尺寸为100*100的图片" data-imgsrc="/static/image/avatar_default.jpg">
                                     <i class="fa fa-image"></i>
                                     <input type="file" name="voteOptions1Image" style="display:none">
@@ -699,7 +789,7 @@
                                 <input name="voteOption1Content">
                             </p>
                             <p data-vote-options-id="2">
-                                选项2:
+                                <span>选项2:</span>
                                 <label class="vote-options-image" title="建议上传尺寸为100*100的图片" data-imgsrc="/static/image/avatar_default.jpg">
                                     <i class="fa fa-image"></i>
                                     <input type="file" name="voteOptions2Image" style="display:none">
@@ -747,19 +837,19 @@
                     $(this).next('.c-r-s-panel-vote-item-info').addClass('c-r-s-panel-vote-item-info-active')
                 }
             }
-            $('.vote-options-addnew').on('click',optionsAddNew)
-            $('#c-r-s-panel-vote-addbtn').on('click',voteAddNew)
-            $('.c-r-s-panel-vote-item-header').on('click',voteShowInfo)
-
             function voteSave(e){
                 e.stopPropagation()
                 var voteItem = $(this).parents('.c-r-s-panel-vote-item')
                 if(voteItem.attr('data-save-flag') == '1') return
+                if(voteItem.attr('data-open-flag') == '1') {
+                    alert("该投票正在进行，请先关闭后修改")
+                    return
+                }
                 var settingsItem = voteItem.children('.c-r-s-panel-vote-item-info').children('.c-r-s-panel-vote-item-settings')
                 var optionsItem = voteItem.children('.c-r-s-panel-vote-item-info').children('.c-r-s-panel-vote-item-options')
                 var voteId = voteItem.attr('data-vote-id')
                 var vote = {}
-                var options = {}
+                var options = []
                 var settings = {}
                 vote.voteId = voteId
                 vote.title = optionsItem.children('p:eq(0)').children('input').val()
@@ -771,7 +861,6 @@
                 settings.check = settingsItem.children('.vote-check-btn').attr('data-vote-flag')
                 settings.type = settingsItem.children('.vote-type-btn').attr('data-vote-flag')
                 settings.display = settingsItem.children('.vote-display-btn').attr('data-vote-flag')
-                console.log(settings)
                 for(var i = 1;i < optionsItem.children('p[data-vote-options-id]').length + 1;i++){
                     var item = optionsItem.children('p[data-vote-options-id="'+ i +'"]')
                     var obj = {}
@@ -782,8 +871,8 @@
                         return
                     }
                     obj.imgsrc = item.children('.vote-options-image').attr('data-imgsrc')
-                    options[i] = obj
-                }    
+                    options.push(obj)
+                }
                 vote.settings = settings
                 vote.options = options
                 vote.username = "<%= username %>"
@@ -844,7 +933,6 @@
                     }
                 })
             }
-
             function voteSwitch(e){
                 e.stopPropagation()
                 var voteItem = $(this).parents('.c-r-s-panel-vote-item')
@@ -857,6 +945,7 @@
                     var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
                     var clearMyLoading = myLoading("Switching...",html)
                     vote.type = '1'
+                    var that = $(this)
                     $.post('/api/wall/switchVote',vote,function(res){
                         if(!!res && res != '-1'){
                             clearMyLoading();
@@ -870,7 +959,9 @@
                             voteItem.attr({
                                 'data-open-flag':'1'
                             })
-                            $(this).removeClass('fa-toggle-off').addClass('fa-toggle-on')
+                            that.removeClass('fa-toggle-off').addClass('fa-toggle-on').css({
+                                color: 'rgba(100,205,100,.7)'
+                            })
                         }else{
                             clearMyLoading();
                             html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
@@ -886,6 +977,7 @@
                     var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
                     var clearMyLoading = myLoading("Switching...",html)
                     vote.type = '0'
+                    var that = $(this)
                     $.post('/api/wall/switchVote',vote,function(res){
                         if(!!res && res != '-1'){
                             clearMyLoading();
@@ -897,7 +989,9 @@
                             voteItem.attr({
                                 'data-open-flag':'0'
                             })
-                            $(this).removeClass('fa-toggle-on').addClass('fa-toggle-off')
+                            that.removeClass('fa-toggle-on').addClass('fa-toggle-off').css({
+                                color: "#000"
+                            })
                         }else{
                             clearMyLoading();
                             html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
@@ -909,11 +1003,6 @@
                     })
                 }
             }
-
-            $('.vote-save-btn').on('click',voteSave)
-            $('.vote-delete-btn').on('click',voteDelete)
-            $('.vote-switch-btn').on('click',voteSwitch)
-            
             function voteBtnClick(event){
                 parent = event.data.parent
                 ps = event.data.ps || ''
@@ -947,16 +1036,10 @@
                         'data-vote-flag':'1'
                     })
                 }
+                $(this).parents('.c-r-s-panel-vote-item').attr({
+                    'data-save-flag': '0'
+                })
             }
-
-            $('.vote-radio-btn').on('click',{parent:'.vote-check-btn',ps:'next'},voteBtnClick)
-            $('.vote-options-btn').on('click',{parent:'.vote-check-btn'},voteBtnClick)
-            $('.vote-text-image-btn').on('click',{parent:'.vote-type-btn',ps:'next'},voteBtnClick)
-            $('.vote-text-btn').on('click',{parent:'.vote-type-btn'},voteBtnClick)
-            $('.vote-show-illustration-btn').on('click',{parent:'.vote-display-btn',ps:'next'},voteBtnClick)
-            $('.vote-show-list-btn').on('click',{parent:'.vote-display-btn'},voteBtnClick)
-
-            $('.vote-options-image').children('input').change(chooseOptionsImage)
             function chooseOptionsImage(){
                 var that = $(this)
                 var reader = new FileReader()
@@ -1015,7 +1098,20 @@
                     }
                 }
                 reader.readAsDataURL(this.files[0])
-            }  
+            }
+
+            //发送广播通知
+            $("#c-r-s-panel-host-input").children('input').keyup(function (e) {
+                if(e && e.keyCode == '13'){
+                    var msg = {}
+                    msg.from = "<%= username %>"
+                    msg.content = $(this).val()
+                    msg.loopTimes = parseInt($("#c-r-s-panel-host-input-number").children('input').val())
+                    IO.emit("host",msg)
+                    $(this).val('')
+                    $("#c-r-s-panel-host-input-number").children('input').val('2')
+                }
+            })
         })
     </script>
 </head>
@@ -1023,7 +1119,7 @@
 <div class="container">
     <div class="c-l">
         <header class="c-l-tile">
-            <img src="/static/image/logo.png">
+            <img src="/static/image/logo.svg">
             <br>
             <span>welcome <%= username %> to HI-FI</span>
             <br>
@@ -1089,17 +1185,17 @@
                         <i class="fa fa-gift"></i>
                         <span>彩蛋</span>
                     </div>
-                    <div id="c-r-s-guests2">
+                    <div id="c-r-s-host">
                         <i class="fa fa-user-circle-o"></i>
-                        <span>other</span>
+                        <span>主持</span>
                     </div>
-                    <div id="c-r-s-vote2">
+                    <div id="c-r-s-sign" style="background:rgb(248, 104, 104);">
                         <i class="fa fa-bar-chart"></i>
-                        <span>other</span>
+                        <span>签到</span>
                     </div>
-                    <div id="c-r-s-lottery2">
+                    <div id="c-r-s-video" style="background:rgb(248, 104, 104);">
                         <i class="fa fa-gift"></i>
-                        <span>other</span>
+                        <span>直播</span>
                     </div>
                 </div>
                 <div id="c-r-s-panel-guests" class="c-r-s-panel">
@@ -1121,7 +1217,7 @@
                     </div>
                 </div>
                 <div id="c-r-s-panel-vote" class="c-r-s-panel">
-                    <header><i class="fa fa-toggle-off"></i>投票设置</header>
+                    <header><i class="fa fa-toggle-off" id="vote-flag"></i>投票设置</header>
                     <div id="c-r-s-panel-vote-list">
                         <div id="c-r-s-panel-vote-addbtn">
                             <img src="/static/image/add_icon.ico" title="添加">
@@ -1129,14 +1225,21 @@
                     </div>
                 </div>
                 <div id="c-r-s-panel-lottery" class="c-r-s-panel">
-                    <header><i class="fa fa-toggle-off"></i>彩蛋设置</header>
+                    <header><i class="fa fa-toggle-off" id="lottery-flag"></i>彩蛋设置</header>
                     <div>
 
                     </div>
                 </div>
-                <div id="c-r-s-panel-guests2" class="c-r-s-panel"></div>
-                <div id="c-r-s-panel-vote2" class="c-r-s-panel"></div>
-                <div id="c-r-s-panel-lottery2" class="c-r-s-panel"></div>
+                <div id="c-r-s-panel-host" class="c-r-s-panel">
+                    <header><i class="fa fa-toggle-on" style="cursor:not-allowed"></i>主持控制台</header>
+                    <div id="c-r-s-panel-host-panel">
+                        <p id="host-alert"></p>
+                        <p id="c-r-s-panel-host-input-number"><span>循环通知次数:</span><input type="number" min="1" max="10" step="1" value="2"></p>
+                        <p id="c-r-s-panel-host-input"><i>Click or Hit Enter to Submit</i><input placeholder="Broadcast"><i class="fa fa-check"></i></p>
+                    </div>
+                </div>
+                <div id="c-r-s-panel-sign" class="c-r-s-panel" style="background:rgb(248, 104, 104)"></div>
+                <div id="c-r-s-panel-video" class="c-r-s-panel" style="background:rgb(248, 104, 104)"></div>
             </div>
             <div id="c-r-d">
 

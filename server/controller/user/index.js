@@ -36,6 +36,9 @@ export default class {
                     username:username,
                     password:password.substr(0, 6) + crypto.createHash("md5").update(username).digest("hex").substr(6, 12) + password.substr(-6)
                 })
+                await db.wall.create({
+                    username:username
+                })
                 if(userinfo){
                     //注册成功
                     req.session.username = userinfo.username

@@ -310,9 +310,47 @@ function stopAutoSlide() {
 
 
 /*****guests carousel ******/
+var clearAlertGuestsInfoPanel = null
 var bindGuestsCarousel = function () {
   var carousels = document.querySelectorAll('.guestsCarousel');
   for (var i = 0; i < carousels.length; i++) carousel(carousels[i]);
+  $('.guestsCarousel').children('figure').children('img').on('click',function(){
+      clearTimeout(guestsCarouselTimer)
+      var html = `<div class="alertGuestsInfoPanel">
+          <p><img src="${$(this).attr('src')}"></p>
+          <p>Name:${$(this).attr('title')}</p>
+          <p>Title:${$(this).attr('data-title')}</p>
+          <p>cotent:${$(this).attr('data-content')}</p>
+      </div>`
+      clearAlertGuestsInfoPanel = myLoading("INFO:",html)
+      $('.alertGuestsInfoPanel').parent().parent().removeAttr('style').parent().css({
+          display:'flex',
+          'justify-content':'center',
+          'align-items':'center'
+      })
+      $('.alertGuestsInfoPanel').parent().parent().parent().on('click',function(){
+          clearAlertGuestsInfoPanel()
+          setGuestsTimeoutRotate()
+      })
+  })
+}
+var offGuestsCarousel = function(){
+  var carousels = document.querySelectorAll('.guestsCarousel');
+  for (var i = 0; i < carousels.length; i++) {
+    var figure = carousels[i].querySelector('figure'),
+        images = figure.querySelectorAll('img'),
+        iEle = figure.querySelectorAll('i'),
+        n = images.length
+    figure.removeAttribute("style")
+    for (var i = 0; i < n; i++) {
+        images[i].removeAttribute("style")
+        iEle[i].removeAttribute("style")
+    }
+    clearTimeout(guestsCarouselTimer)
+    setGuestsTimeoutRotate = null
+    guestsCarouselTimer = null
+    $('.guestsCarousel').children('figure').children('img').off()
+  }
 }
 var setGuestsTimeoutRotate = null;
 var guestsCarouselTimer = null;
@@ -335,7 +373,8 @@ function carousel(root) {
 
     for (var i = 0; i < n; i++) {
       images[i].style.padding = gap + 'px';
-    }for (i = 1; i < n; i++) {
+    }
+    for (i = 1; i < n; i++) {
       images[i].style.transformOrigin = '50% 50% ' + -apothem + 'px';
       images[i].style.transform = 'rotateY(' + i * theta + 'rad)';
       tags[i].style.transformOrigin = '50% 50% ' + -apothem + 'px';

@@ -22,9 +22,9 @@ export default class {
         if(!wall.flags) return res.send('-1')
         return res.send(wall.flags)
     }
-
     static async setFlags(req,res,next){
         let info = req.body
+        console.log(info)
         if(!info || !info.username) return res.send('-1')
         if(info.flag.hasOwnProperty('guests')){
             let flag = info.flag.guests
@@ -162,11 +162,20 @@ export default class {
             if(!query) return res.send('-1')
             return res.send('1')
         }else if(vote.type == "0"){
-            query = await db.wall.findOneAndUpdate({$and:[{username:vote.username},{activeVote:{voteId:vote.voteId}}]},{$set:{activeVote:null}},{upsert:false,new:true})
+            let query = await db.wall.findOneAndUpdate({username:vote.username},{$set:{activeVote:null}},{upsert:false,new:false})
             if(!query) return res.send('-1')
+            await db.wall.findOneAndUpdate({$and:[{username:vote.username},{votes:{$elemMatch:{voteId:vote.voteId}}}]},{"votes.$":query.activeVote})            
             return res.send('1')
         }
     }
+
+    static async getActiveVote(req,res,next){
+        let username = req.query.username
+        let wall = await db.wall.findOne({username:username},{activeVote:1,_id:0})
+        if(!wall.activeVote) return res.send('-1')
+        return res.send(wall.activeVote)
+    }
+
     static async getQRSrc(req,res,next){
         let username = req.query.username
         if(!username) return res.send('-1')

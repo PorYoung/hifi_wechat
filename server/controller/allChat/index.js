@@ -39,6 +39,7 @@ const findByPaginationAsync = page => {
 
 export default class {
     static async allchat(req, res, next) {
+        let username = req.query.username
         //读取数据库
         let userinfo = await db.connection.findOne({
             openid: req.query.openid
@@ -56,11 +57,13 @@ export default class {
                 console.log(error)
             }
             let timestamp = new Date().getTime()
-            let jsapi_url = config.urlPrefix+'/allChat?openid='+req.session.openid
+            let jsapi_url = config.urlPrefix+'/allChat?openid='+req.session.openid+'&username='+username
             let str = `jsapi_ticket=${ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${jsapi_url}`
             let signature = sha1(str)
 
             return res.render('allChat', {
+                username: username,
+                openid: userinfo.openid,
                 nickname: userinfo.nickname,
                 headimgurl: userinfo.headimgurl,
                 sex:userinfo.sex,
@@ -68,7 +71,7 @@ export default class {
                 appId: config.appID,
                 timestamp: timestamp,
                 nonceStr: config.token,
-                signature: signature,
+                signature: signature
             })
         } else {
             //返回错误:重新登录

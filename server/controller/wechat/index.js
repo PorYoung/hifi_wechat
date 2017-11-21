@@ -47,9 +47,42 @@ export default class {
         if (message.msgtype === 'event') {
             //订阅事件
             if (message.event === 'subscribe') {
-                content.MsgType = 'text'
-                content.content = '欢迎关注公众号'
+                console.log(message)
+                if(!!message.eventkey){
+                    //用户扫码关注公众号
+                    //后续需要对参数进行判断
+                    var username = message.eventkey.slice(message.eventkey.indexOf("_")+1)
+                    content.MsgType = 'news'
+                    content.news = []
+                    let news1 = {
+                        title: '欢迎关注HIFI | 赶快点击进入发弹幕吐槽吧-.-',
+                        description: '赶快点击进入发弹幕吐槽吧-.-',
+                        picurl: config.urlPrefix + '/static/image/logo.png',
+                        url: config.urlPrefix + '/start?username='+username
+                    }
+                    let news2 = {
+                        title: 'Tips | 回复1参与正在进行的活动吧',
+                        description: '回复1参与正在进行的活动吧'
+                    }
+                    content.news.push(news1)
+                    content.news.push(news2)
+                }else{
+                    content.MsgType = 'text'
+                    content.content = '欢迎关注公众号,回复1参与正在进行的活动吧'
+                }
+            } else if (message.event === 'SCAN'){
+                var username = message.eventkey.slice(message.eventkey.indexOf("_")+1)
+                content.MsgType = 'news'
+                content.news = []
+                let news1 = {
+                    title: '欢迎回到HIFI | 赶快点击进入发弹幕吐槽吧-.-',
+                    description: '赶快点击进入发弹幕吐槽吧-.-',
+                    picurl: config.urlPrefix + '/static/image/logo.png',
+                    url: config.urlPrefix + '/start?username='+username
+                }
+                content.news.push(news1)
             }
+
             //地理位置
             else if (message.event === 'LOCATION') {
                 content.MsgType = 'text'
@@ -65,10 +98,10 @@ export default class {
                 content.MsgType = 'news'
                 content.news = []
                 let news1 = {
-                    title: 'Link',
-                    description: 'click to redirect to new page',
-                    picurl: config.urlPrefix + '/static/image/1.jpg',
-                    url: config.urlPrefix + '/start'
+                    title: '正在进行的活动',
+                    description: '赶快点击进入发弹幕吐槽吧-.-',
+                    picurl: config.urlPrefix + '/static/image/logo.png',
+                    url: config.urlPrefix + '/start?username=Por'
                 }
                 content.news.push(news1)
             } else if (message.content === '2') {
@@ -76,7 +109,9 @@ export default class {
                 content.content = 'hi'
             } else {
                 content.MsgType = 'text'
-                content.content = 'I can not understand'
+                // 后续考虑实现
+                // content.content = '别调戏我啊，回复3去调戏机器人吧~.~'
+                content.content = "Sorry, I can't understand *_*"
             }
         } else if (message.msgtype === 'image') {
             content.MsgType = 'image'
@@ -91,6 +126,7 @@ export default class {
     //处理微信用户验证
     static async authorization(req, res, next) {
         const code = req.query.code
+        let username = req.query.username
         let url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${config.appID}&secret=${config.appSecret}&code=${code}&grant_type=authorization_code`
         let data = await utils.httpsGetJSON(url).catch(err => console.log(err))
         if (!data.access_token) {
@@ -137,12 +173,13 @@ export default class {
             return res.send(data.errmsg)
         }
         // console.log('重定向到：' + '/allChat?openid=' + user.info.openid)
-        return res.redirect('/allChat?openid=' + user.info.openid)
+        return res.redirect('/allChat?openid=' + user.info.openid + '&username=' + username)
     }
 
     //引导微信用户进行验证的跳转页面
     static async start(req, res, next) {
-        return res.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/api/authorization')}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
+        let username = !!req.query.username?req.query.username:"Por"
+        return res.redirect(`https://open.weixin.qq.com/connect/oauth2/authorize?appid=${config.appID}&redirect_uri=${encodeURIComponent(config.urlPrefix + '/api/authorization?username=' + username)}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`)
     }
 
     //获取用户带场景值二维码

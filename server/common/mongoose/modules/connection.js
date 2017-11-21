@@ -16,7 +16,9 @@ const connectionSchema = new mongoose.Schema({
   //微信头像
   headimgurl : String,
   //参与互动次数
-  times : Number
+  times : Number,
+  //投票信息
+  vote: Object
 })
 const connection = mongoose.model('connection', connectionSchema)
 export default connection

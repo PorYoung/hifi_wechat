@@ -98,15 +98,17 @@ Object{
             type: '1' || '0',
             display: '1' || '0'
         },
-        options:{
-            1:{
+        options:[
+            {
                 id:'',
                 content:'',
                 imgSrc:''
             },
-            2:{
+            {
 
             }
         }
 
     }]
+
+    15.插件 animatext.js //增加设置循环次数 line 108

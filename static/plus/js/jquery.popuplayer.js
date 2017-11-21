@@ -45,7 +45,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
             closeBtn: null, // 指定关闭按钮
             openCallback: null, // 展开的回调
             closeCallbackBefore:null, //关闭前执行
-            closeCallback: null // 关闭的回调
+            closeCallback: null, // 关闭的回调
+            bindEventsCallback: null //绑定事件的回调
         };
 
         // 合并默认参数和自定义参数
@@ -149,6 +150,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
                 $(this.options.closeBtn).click(function () {
                     that.close();
                 });
+            }
+            if(this.options.bindEventsCallback){
+                this.options.bindEventsCallback();
             }
         }
     };
