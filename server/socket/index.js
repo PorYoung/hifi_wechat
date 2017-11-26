@@ -91,6 +91,17 @@ const handle = socket => {
         let socketId = user.socketId
         socket.to(socketId).emit("guest",info)
     })
+    //vote to the screen
+    socket.on("switchVote",async(info) => {
+        let query = null,
+            user = await db.user.findOne({"username":info.username},{_id:0,socketId:1})
+        if(info.type == "1"){
+            query = await db.wall.findOne({username:info.username},{_id:0,activeVote:1})
+            query = query.activeVote
+        }
+        let socketId = user.socketId
+        socket.to(socketId).emit("switchVote",query)
+    })
     //投票检查
     socket.on("vote_check",async(info) => {
         let connection =  await db.connection.findOne({$and:[{nickname:info.nickname},{openid:info.openid}]},{_id:0,vote:1,socketId:1})

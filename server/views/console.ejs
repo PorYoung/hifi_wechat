@@ -121,6 +121,20 @@
             font-size: 2em;
             transition: all .5s;
         }
+        <% if(UI.background == "starsky") { %>
+        #starsky{
+        <% }else if(UI.background == "cloudsky"){ %>
+        #cloudsky{
+        <% }else if(UI.background == "romanticbubble"){ %>
+        #romanticbubble{
+        <% }else if(UI.background == "mid-autumn"){ %>
+        #mid-autumn{
+        <% }else{ %>
+        #starfield{
+        <% } %>
+            box-shadow: 0px 0px 1px 0px green;
+            border: 1px solid #1ece1e;
+        }
     </style>
     <script>
         $(function($){
@@ -128,7 +142,14 @@
             const config = {
                 flags:{},
                 guests: [],
-                QRSrc:null
+                QRSrc:null,
+                UI:{
+                    username: "<%= username %>",
+                    background: "<%= UI.background %>",
+                    avatar: "<%= UI.avatar %>",
+                    bgtext: "<%= UI.bgtext %>",
+                    bgtextContent: "<%= UI.bgtextContent %>"
+                }
             }
             var IO = io('/allChat')
             $.get('/api/wall/flags?username=<%= username %>',function(data){
@@ -247,7 +268,12 @@
                         $('#c-r-s-panel-vote-addbtn').before(html)
                         $('.vote-options-addnew').off().on('click',optionsAddNew)
                         $('.c-r-s-panel-vote-item[data-vote-id="'+item.voteId+'"]').children('.c-r-s-panel-vote-item-header').on('click',voteShowInfo)
-                        
+                        $('.c-r-s-panel-vote-item[data-vote-id="'+item.voteId+'"] input').change(function(){
+                            $('.c-r-s-panel-vote-item[data-vote-id="'+item.voteId+'"]').attr({
+                                "data-save-flag": "0"
+                            })
+                        })
+
                         var settingsItem = $('.c-r-s-panel-vote-item[data-vote-id="'+item.voteId+'"]').children('.c-r-s-panel-vote-item-info').children('.c-r-s-panel-vote-item-settings')
                         settingsItem.children('.vote-check-btn').children('.vote-radio-btn').on('click',{parent:'.vote-check-btn',ps:'next'},voteBtnClick)                    
                         settingsItem.children('.vote-check-btn').children('.vote-options-btn').on('click',{parent:'.vote-check-btn'},voteBtnClick)
@@ -806,7 +832,12 @@
                 $('.vote-options-addnew').off().on('click',optionsAddNew)
                 $('.c-r-s-panel-vote-item[data-vote-id="'+id+'"]').children('.c-r-s-panel-vote-item-info').addClass('c-r-s-panel-vote-item-info-active')
                 $('.c-r-s-panel-vote-item[data-vote-id="'+id+'"]').children('.c-r-s-panel-vote-item-header').on('click',voteShowInfo)
-                
+                $('.c-r-s-panel-vote-item[data-vote-id="'+id+'"] input').change(function(){
+                    $('.c-r-s-panel-vote-item[data-vote-id="'+id+'"]').attr({
+                        "data-save-flag": "0"
+                    })
+                })
+
                 var settingsItem = $('.c-r-s-panel-vote-item[data-vote-id="'+id+'"]').children('.c-r-s-panel-vote-item-info').children('.c-r-s-panel-vote-item-settings')
                 settingsItem.children('.vote-check-btn').children('.vote-radio-btn').on('click',{parent:'.vote-check-btn',ps:'next'},voteBtnClick)
                 settingsItem.children('.vote-check-btn').children('.vote-options-btn').on('click',{parent:'.vote-check-btn'},voteBtnClick)
@@ -884,6 +915,7 @@
                         voteItem.attr({
                             'data-save-flag':'1'
                         })
+                        voteItem.children(".c-r-s-panel-vote-item-header").children("div:first-child").children("span:last-child").html(vote.title)
                         clearMyLoading();
                         html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
                         clearMyLoading = myLoading("Success",html);
@@ -962,6 +994,7 @@
                             that.removeClass('fa-toggle-off').addClass('fa-toggle-on').css({
                                 color: 'rgba(100,205,100,.7)'
                             })
+                            IO.emit("switchVote",vote)
                         }else{
                             clearMyLoading();
                             html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
@@ -972,7 +1005,7 @@
                         }
                     })
                 }else{
-                    var flag = confirm('确定在主屏幕上关闭该投票活动吗')
+                    var flag = confirm('确定在主屏幕上关闭该投票活动吗(关闭后修改活动内容原投票结果将被清空)')
                     if(!flag) return
                     var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
                     var clearMyLoading = myLoading("Switching...",html)
@@ -992,6 +1025,7 @@
                             that.removeClass('fa-toggle-on').addClass('fa-toggle-off').css({
                                 color: "#000"
                             })
+                            IO.emit("switchVote",vote)
                         }else{
                             clearMyLoading();
                             html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
@@ -1100,6 +1134,119 @@
                 reader.readAsDataURL(this.files[0])
             }
 
+            $("#setting-avatar span:nth-child(1)").click(function(){
+                if($("#setting-avatar").attr("data-setting-avatar") == "rectangle"){
+                    return
+                }else{
+                    $(this).css({
+                        'background-color':'rgba(30,200,30,.7)'
+                    })
+                    $("#setting-avatar span:nth-child(2)").css({
+                        'background-color':'initial'
+                    })
+                    $("#setting-avatar").attr({
+                        "data-setting-avatar": "rectangle"
+                    })
+                }
+            })
+            $("#setting-avatar span:nth-child(2)").click(function(){
+                if($("#setting-avatar").attr("data-setting-avatar") == "circle"){
+                    return
+                }else{
+                    $(this).css({
+                        'background-color':'rgba(30,200,30,.7)'
+                    })
+                    $("#setting-avatar span:nth-child(1)").css({
+                        'background-color':'initial'
+                    })
+                    $("#setting-avatar").attr({
+                        "data-setting-avatar": "circle"
+                    })
+                }
+            })
+            $("#setting-bgtext span:nth-child(1)").click(function(){
+                if($("#setting-bgtext").attr("data-setting-bgtext") == "1"){
+                    return
+                }else{
+                    $(this).css({
+                        'background-color':'rgba(30,200,30,.7)'
+                    })
+                    $("#setting-bgtext span:nth-child(2)").css({
+                        'background-color':'initial'
+                    })
+                    $("#bgtext-input").css({
+                        display: "flex"
+                    })
+                    $("#setting-bgtext").attr({
+                        "data-setting-bgtext": "1"
+                    })
+                }
+            })
+            $("#setting-bgtext span:nth-child(2)").click(function(){
+                if($("#setting-bgtext").attr("data-setting-bgtext") == "0"){
+                    return
+                }else{
+                    $(this).css({
+                        flex:'7',
+                        'background-color':'rgba(30,200,30,.7)'
+                    })
+                    $("#setting-bgtext span:nth-child(1)").css({
+                        flex:'3',
+                        'background-color':'initial'
+                    })
+                    $("#bgtext-input").css({
+                        display: "none"
+                    })
+                    $("#setting-bgtext").attr({
+                        "data-setting-bgtext": "0"
+                    })
+                }
+            })
+            $("#background-setting").children("div").click(function(){
+                var id = $("#background-setting").attr("data-background-setting")
+                if($(this).attr("id") == id) return
+                $("#"+id).css({
+                    border: "none",
+                    "box-shadow": "initial"
+                })
+                $(this).css({
+                    border: "1px solid #1ece1e",
+                    "box-shadow": "0px 0px 1px green"
+                })
+                $("#background-setting").attr({
+                    "data-background-setting": $(this).attr("id")
+                })
+            })
+            //保存界面设计
+            $("#settings-save span").click(function(){
+                var info = {
+                    background : $("#background-setting").attr("data-background-setting"),
+                    avatar : $("#setting-avatar").attr("data-setting-avatar"),
+                    bgtext : $("#setting-bgtext").attr("data-setting-bgtext"),
+                    bgtextContent : $("#bgtext-input").children("input").val()
+                }
+                Object.assign(config.UI,info)
+                var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
+                var clearMyLoading = myLoading("Saving...",html)
+                $.post('/api/wall/setUI',config.UI,function(res){
+                    if(!res || res == "-1"){
+                        clearMyLoading();
+                        html = "<i class='fa fa-remove fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Failed</span>"
+                        clearMyLoading = myLoading("Failed, try again",html);
+                        setTimeout(function () {
+                            clearMyLoading();
+                        },1200);
+                    }else{
+                        clearMyLoading()
+                        html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
+                        clearMyLoading = myLoading("Success",html)
+                        setTimeout(function () {
+                            clearMyLoading()
+                        },1200)
+                    }
+                })
+            })
+
             //发送广播通知
             $("#c-r-s-panel-host-input").children('input').keyup(function (e) {
                 if(e && e.keyCode == '13'){
@@ -1119,7 +1266,7 @@
 <div class="container">
     <div class="c-l">
         <header class="c-l-tile">
-            <img src="/static/image/logo.svg">
+            <img src="/static/image/logo.svg" style="padding:20px;">
             <br>
             <span>welcome <%= username %> to HI-FI</span>
             <br>
@@ -1170,7 +1317,54 @@
                     </div>
                 </div>
             </div>
-            <div id="c-r-i"></div>
+            <div id="c-r-i">
+                <div id="settings-btn">
+                    <p id="setting-avatar" data-setting-avatar="<%= UI.avatar %>">头像:
+                    <% if(UI.avatar == "circle"){ %>
+                    <span style="flex:3;background-color:initial;">方形</span>
+                    <span style="flex:7;background-color:rgba(30,200,30,.7);">圆形</span>
+                    <% }else{ %>
+                    <span style="flex:7;background-color:rgba(30,200,30,.7);">方形</span>
+                    <span style="flex:3;background-color:initial;">圆形</span>
+                    <% } %>
+                    </p>
+                    <p id="setting-bgtext" data-setting-bgtext="<%= UI.bgtext %>">背景文字:
+                    <% if(UI.bgtext == "0"){ %>
+                    <span style="flex:3;background-color:initial;">开启</span><span style="flex:7;background-color:rgba(30,200,30,.7);">关闭</span>
+                    <p id="bgtext-input" style="display:none;"><i>This Will Show On the Background</i><input placeholder="logo text" value="<%= UI.bgtextContent %>"><i class="fa fa-check"></i></p>                    
+                    </p>
+                    <% }else{ %>
+                    <span style="flex:7;background-color:rgba(30,200,30,.7)">开启</span><span style="flex:3;background-color:initial;">关闭</span>
+                    </p>
+                    <p id="bgtext-input"><i>This Will Show On the Background</i><input placeholder="logo text" value="<%= UI.bgtextContent %>"><i class="fa fa-check"></i></p>
+                    <% } %>
+                </div>
+                <div id="background-setting" data-background-setting="<%= UI.background %>">
+                    <div id="starfield">
+                        <img src="/static/image/background/starfield.png">
+                        <span>星空·夜(默认)</span>
+                    </div>
+                    <div id="starsky">
+                        <img src="/static/image/background/starsky.png">
+                        <span>星空·黄昏</span>
+                    </div>
+                    <div id="cloudsky">
+                        <img src="/static/image/background/cloudsky.png">
+                        <span>天空·渐变</span>
+                    </div>
+                    <div id="romanticbubble">
+                        <img src="/static/image/background/romanticbubble.png">
+                        <span>浪漫气泡</span>
+                    </div>
+                    <div id="mid-autumn">
+                        <img src="/static/image/background/mid-autumn.png">
+                        <span>节日·中秋</span>
+                    </div>
+                </div>
+                <div id="settings-save">
+                    <span>SAVE</span>
+                </div>
+            </div>
             <div id="c-r-s">
                 <div id="c-r-s-wrap">
                     <div id="c-r-s-guests">

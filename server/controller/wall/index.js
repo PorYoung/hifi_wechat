@@ -3,17 +3,60 @@ import fs from 'fs'
 import path from 'path'
 import formidable from 'formidable'
 import utils from '../../common/utils'
+import { inflate } from 'zlib';
 
 export default class {
     static async wall(req,res,next){
         //控制台 主页面渲染
-        return res.render('console',{username:req.session.username})
+        let info = await db.wall.findOne({username:req.session.username},{_id:0,UI:1})
+        let UI = {
+            background: "starfield",
+            avatar: "rectangle",
+            bgtext: "1",
+            bgtextContent: "HIFI ^_^!"
+        }
+        if(!info.UI){
+            info.UI = UI
+        }
+        return res.render('console',{
+            username:req.session.username,
+            UI: info.UI
+        })
     }
     static async screen(req,res,next){
         //读取用户设置参数，进行主页面渲染
+        let info = await db.wall.findOne({username:req.session.username},{_id:0,UI:1})
+        let UI = {
+            background: "starfield",
+            avatar: "rectangle",
+            bgtext: "1",
+            bgtextContent: "HIFI ^_^!"
+        }
+        if(!info.UI){
+            info.UI = UI
+        }
         return res.render('screen',{
-            username:req.session.username
+            username:req.session.username,
+            UI:info.UI
         })
+    }
+
+    static async setUI(req,res,next){
+        let info = req.body
+        if(!info || !info.username) return res.send('-1')
+        if(info.hasOwnProperty('background')){
+            let data = await db.wall.findOneAndUpdate({username:info.username},{$set:{"UI.background":info.background}})
+        }
+        if(info.hasOwnProperty('avatar')){
+            let data = await db.wall.findOneAndUpdate({username:info.username},{$set:{"UI.avatar":info.avatar}})
+        }
+        if(info.hasOwnProperty('bgtext')){
+            let data = await db.wall.findOneAndUpdate({username:info.username},{$set:{"UI.bgtext":info.bgtext}})
+        }
+        if(info.hasOwnProperty('bgtextContent')){
+            let data = await db.wall.findOneAndUpdate({username:info.username},{$set:{"UI.bgtextContent":info.bgtextContent}})         
+        }
+        return res.send('1')
     }
 
     static async getFlags(req,res,next){
@@ -24,7 +67,6 @@ export default class {
     }
     static async setFlags(req,res,next){
         let info = req.body
-        console.log(info)
         if(!info || !info.username) return res.send('-1')
         if(info.flag.hasOwnProperty('guests')){
             let flag = info.flag.guests

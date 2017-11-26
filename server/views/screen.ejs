@@ -70,12 +70,263 @@
             padding: 1em 0;
             margin-left: 0;
 		}
+        #count { 
+		    	display: inline-block; height: 3.6rem; overflow: hidden; 
+			    /*border: 1px solid #000;*/
+			    top: 1rem;
+			    /*background-image: linear-gradient(#000 0%,#3d3d3d 50%,#000 100%);*/
+			    position: relative;
+                z-index: 0;
+        } 
+        #count ul { 
+            display: inline-block; 
+            list-style-type: none; 
+            width: 2rem; 
+            padding-left: 0; 
+            margin-top: 0; 
+            position: relative; 
+            top: -1.3rem; 
+            line-height: 32px; 
+            /*color: #fff;*/
+            font-size: 2em;
+            transition: top 1s;
+        }  
+        #count img{position:absolute;bottom:0;z-index:999;}
+
+        <% if(UI.avatar == "circle"){ %>
+        #w-message > div > header > img{
+            border-radius: 50%;
+            box-shadow: 0 0 8px 2px rgba(102, 51, 153, .7);
+        }
+        <% } %>
     </style>
 </head>
-<body>
+<body onselectstart="return false">
     <!--背景绘制-->
-    <div id="background" style="position: absolute;left: 0;right: 0;top: 0;bottom: 0;"></div>
+    <% if(UI.background == "default" || UI.background == "starfield" || !UI.background){ %>
+    <div id="background" class="starfield"></div>
     <script src="/static/js/jquery-starfield.js"></script>
+    <% }else if(UI.background == "cloudsky" ){ %>
+    <link href="/static/css/cloud-background.css" rel="stylesheet">
+    <style>
+        .wallCtr{
+            color: #007fd5;
+        }
+    </style>
+    <div id="background" class="sky">
+        <div class="clouds_one"></div>
+        <div class="clouds_two"></div>
+        <div class="clouds_three"></div>
+    </div>
+    <% }else if(UI.background == "starsky"){ %>
+    <script src='/static/plus/js/prefixfree.min.js'></script>
+	<style class="cp-pen-styles">
+        #background {
+            background: radial-gradient(200% 100% at bottom center, #f7f7b6, #e96f92, #75517d, #1b2947);
+            background: radial-gradient(220% 105% at top center, #1b2947 10%, #75517d 40%, #e96f92 65%, #f7f7b6);
+            background-attachment: fixed;
+            overflow: hidden;
+        }
+        .wallCtr{
+            color:#fa6855;
+        }
+        /*#count{
+            background-image: none;
+        }*/
+        #liveSubtitle > div{
+            background: rgba(0, 191, 255,0.3);
+        }
+        #w-message > div > div{
+            border-radius: 5px;
+            padding: 12px;
+            background: rgba(0, 191, 255,0.3);
+        }
+        @keyframes rotate {
+        0% {
+            transform: perspective(400px) rotateZ(20deg) rotateX(-40deg) rotateY(0);
+        }
+        100% {
+            transform: perspective(400px) rotateZ(20deg) rotateX(-40deg) rotateY(-360deg);
+        }
+        }
+        .stars {
+        transform: perspective(500px);
+        transform-style: preserve-3d;
+        position: absolute;
+        bottom: 0;
+        perspective-origin: 50% 100%;
+        left: 50%;
+        animation: rotate 90s infinite linear;
+        }
+
+        .star {
+        width: 2px;
+        height: 2px;
+        background: #F7F7B6;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform-origin: 0 0 -300px;
+        transform: translate3d(0, 0, -300px);
+        backface-visibility: hidden;
+        }
+	</style>
+    <div id="background"><div class="stars"></div></div>
+	<script src='/static/plus/js/stopExecutionOnTimeout.js?t=1'></script>
+	<script>
+        $(document).ready(function () {
+            var stars = 800;
+            var $stars = $('.stars');
+            var r = 800;
+            for (var i = 0; i < stars; i++) {
+                if (window.CP.shouldStopExecution(1)) {
+                    break;
+                }
+                var $star = $('<div/>').addClass('star');
+                $stars.append($star);
+            }
+            window.CP.exitedLoop(1);
+            $('.star').each(function () {
+                var cur = $(this);
+                var s = 0.2 + Math.random() * 1;
+                var curR = r + Math.random() * 300;
+                cur.css({
+                    transformOrigin: '0 0 ' + curR + 'px',
+                    transform: ' translate3d(0,0,-' + curR + 'px) rotateY(' + Math.random() * 360 + 'deg) rotateX(' + Math.random() * -50 + 'deg) scale(' + s + ',' + s + ')'
+                });
+            });
+        });
+	</script>
+    <% }else if(UI.background == "romanticbubble"){ %>
+    <div id="background"><canvas id="c" width="300" height="150"></canvas></div>
+    <style>
+        #app{
+            color: rgb(220, 20, 60);
+        }
+    </style>
+    <script type="text/javascript">		
+        $(document).ready(function() {			
+            var canvas = document.getElementById("c");
+            var ctx = canvas.getContext("2d");
+            var c = $("#c");
+            var w,h;
+            var pi = Math.PI;
+            var all_attribute = {
+                num:100,            			 // 个数
+                start_probability:0.1,		     // 如果数量小于num，有这些几率添加一个新的     		     
+                radius_min:1,   			     // 初始半径最小值
+                radius_max:2,   			     // 初始半径最大值
+                radius_add_min:.3,               // 半径增加最小值
+                radius_add_max:.5,               // 半径增加最大值
+                opacity_min:0.3,                 // 初始透明度最小值
+                opacity_max:0.5, 				 // 初始透明度最大值
+                opacity_prev_min:.003,            // 透明度递减值最小值
+                opacity_prev_max:.005,            // 透明度递减值最大值
+                light_min:40,                 // 颜色亮度最小值
+                light_max:70,                 // 颜色亮度最大值
+            };
+            var style_color = find_random(0,360);  
+            var all_element =[];
+            window_resize();
+            function start(){
+                window.requestAnimationFrame(start);
+                style_color+=.1;
+                ctx.fillStyle = 'hsl('+style_color+',100%,97%)';
+                ctx.fillRect(0, 0, w, h);
+                if (all_element.length < all_attribute.num && Math.random() < all_attribute.start_probability){
+                    all_element.push(new ready_run);
+                }
+                all_element.map(function(line) {
+                    line.to_step();
+                })
+            }
+            function ready_run(){
+                this.to_reset();
+            }
+            ready_run.prototype = {
+                to_reset:function(){
+                    var t = this;
+                    t.x = find_random(0,w);
+                    t.y = find_random(0,h);
+                    t.radius = find_random(all_attribute.radius_min,all_attribute.radius_max);
+                    t.radius_change = find_random(all_attribute.radius_add_min,all_attribute.radius_add_max);
+                    t.opacity = find_random(all_attribute.opacity_min,all_attribute.opacity_max);
+                    t.opacity_change = find_random(all_attribute.opacity_prev_min,all_attribute.opacity_prev_max);
+                    t.light = find_random(all_attribute.light_min,all_attribute.light_max);
+                    t.color = 'hsl('+style_color+',100%,'+t.light+'%)';
+                },
+                to_step:function(){
+                    var t = this;
+                    t.opacity -= t.opacity_change;
+                    t.radius += t.radius_change;
+                    if(t.opacity <= 0){
+                        t.to_reset();
+                        return false;
+                    }
+                    ctx.fillStyle = t.color;
+                    ctx.globalAlpha = t.opacity;
+                    ctx.beginPath();
+                    ctx.arc(t.x,t.y,t.radius,0,2*pi,true);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+            function window_resize(){
+                w = window.innerWidth;
+                h = window.innerHeight;
+                canvas.width = w;
+                canvas.height = h;
+            }
+            $(window).resize(function(){
+                window_resize();
+            });
+            function find_random(num_one,num_two){
+                return Math.random()*(num_two-num_one)+num_one;
+            }
+            (function() {
+                var lastTime = 0;
+                var vendors = ['webkit', 'moz'];
+                for(var xx = 0; xx < vendors.length && !window.requestAnimationFrame; ++xx) {
+                    window.requestAnimationFrame = window[vendors[xx] + 'RequestAnimationFrame'];
+                    window.cancelAnimationFrame = window[vendors[xx] + 'CancelAnimationFrame'] ||
+                                                window[vendors[xx] + 'CancelRequestAnimationFrame'];
+                }
+            
+                if (!window.requestAnimationFrame) {
+                    window.requestAnimationFrame = function(callback, element) {
+                        var currTime = new Date().getTime();
+                        var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
+                        var id = window.setTimeout(function() {
+                            callback(currTime + timeToCall);
+                        }, timeToCall);
+                        lastTime = currTime + timeToCall;
+                        return id;
+                    };
+                }
+                if (!window.cancelAnimationFrame) {
+                    window.cancelAnimationFrame = function(id) {
+                        clearTimeout(id);
+                    };
+                }
+            }());
+            start();
+        })
+    </script>
+    <% }else if(UI.background == "mid-autumn"){ %>
+    <div id="background">
+        <canvas id="fullstarbg">你的浏览器不支持canvas标签</canvas>
+        <img src="/static/image/background/rabit.png" class="rabitBg" style="position: fixed;left: 0;top: 50%;"/>
+    </div>
+    <style>
+        #app{
+            color: rgb(255, 228, 196);
+        }
+    </style>
+    <script type="text/javascript" src="/static/plus/js/modernizr-2.6.2.min.js"></script>
+    <script src="/static/plus/js/mid-autumn.js"></script>
+    <% } %>
+
     <div id="app">
         <!--墙-->
         <div class="wall">
@@ -84,7 +335,20 @@
                 <p class="long-shadow">
                     <span class="animateTitle">HIFI ACTIVITY HELPER</span>
                 </p>
-                <p>消息数量({{ liveSubtitleData.length }})</p>
+                <div id="count">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK8AAAAeCAMAAAEa3Y4BAAAAgVBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBrqoyAAAAK3RSTlMABQYMDRQVHR4mJzEyPD1HSFNUX2BsbXh5hIWPkJqbpaaur7e4v8DGx8vMicZiDwAAAxBJREFUWMPlWF1vGzEMoxIFax8KdP//x3IP1gdt32VNl24o5qK4y9nxyZJIUQEOh73BALA+A6DR3wEjYOB4SAAwf9t3oAHne9M4Nok9DLV3vgGEETjaG4Dd6q6/w7CLRl1Kf5eVfaur+t5/guPt438cPc+jx6LBHV807DaZWx+MZavY/JIuBRhusGEsjbBxoHCSv6A9dvr68Kq/Uh+VY3phOIcw+sswYSyKV4bBGdD0Hx9y3eUh110qgnsiHuRlhni47s7wHxGA/Fo4N3JPNme4fxy5QxNzA0IDA0bAX9MAdNKBxgSKenXMxA4mubmekFYW/2kybjv4KzrJ4rSdCLY5OOE0mchKUlS+RnY+f1zwzYZdJOITCR0mNIWvsNKWZo+7kGTnYPOn8CmXBJCr8ocRgLvmfcZ7pH8jrA2sChBZXnia8AH6NdMrIQI2Dtm0X7mUh7LCUdlsiR3APbdciUIQvift4nyxKp64b3g5+LyT+Dojc0bAJsLcEbnF6qOIdp/TgVbMUxQ/09VUQYPkpERE6rhXEmScG/TBmOynEdB4+xJkDYT7HhG2AigiyjycaapzxJq5RkG6fRKotLuq59PEY4e3X0No1H35RBLDtx12VTwWM2VRZutf5ZzWRIURE4Yp6k1tgA14KOZDA0G5YSHflOMDx8mmKbdYArJIvtix5VtZ1kI6pzFfWm433KA6PukV3SfkSecvuwvhmyKx1JTWimJzYetWHGm0oLB4IGvGzNWUelGspAylZ1n44b5MvFelP9QhPWf41eZ6a4flS65a9+6bOqvdlUrsSHSf2MG5IZAKM9WZpVvRRpFa+mKdce7x+rLVrwlDewUV3C/NmN8wcUDeFtiKBqA5CFmX5sdfEwRaP8mqYmqTNo8ToZSkEdkVs37taWmXbdViivfC8QLeJqLu8ooQmmYqEEqanKdbvnWMQMAG3qaGGy0AzzAmHZGC106yuzsRIS6T9g52qrZnQ+jX34sulVmnuuxUwE0R+Ji42xbLjwbXR2iI/7x/ujykKP6EXPlMe/+GUvkvG+RfpCle9dRWm8MAAAAASUVORK5CYII=" alt="" >
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK8AAAAeCAMAAAEa3Y4BAAAAgVBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBrqoyAAAAK3RSTlMABQYMDRQVHR4mJzEyPD1HSFNUX2BsbXh5hIWPkJqbpaaur7e4v8DGx8vMicZiDwAAAxBJREFUWMPlWF1vGzEMoxIFax8KdP//x3IP1gdt32VNl24o5qK4y9nxyZJIUQEOh73BALA+A6DR3wEjYOB4SAAwf9t3oAHne9M4Nok9DLV3vgGEETjaG4Dd6q6/w7CLRl1Kf5eVfaur+t5/guPt438cPc+jx6LBHV807DaZWx+MZavY/JIuBRhusGEsjbBxoHCSv6A9dvr68Kq/Uh+VY3phOIcw+sswYSyKV4bBGdD0Hx9y3eUh110qgnsiHuRlhni47s7wHxGA/Fo4N3JPNme4fxy5QxNzA0IDA0bAX9MAdNKBxgSKenXMxA4mubmekFYW/2kybjv4KzrJ4rSdCLY5OOE0mchKUlS+RnY+f1zwzYZdJOITCR0mNIWvsNKWZo+7kGTnYPOn8CmXBJCr8ocRgLvmfcZ7pH8jrA2sChBZXnia8AH6NdMrIQI2Dtm0X7mUh7LCUdlsiR3APbdciUIQvift4nyxKp64b3g5+LyT+Dojc0bAJsLcEbnF6qOIdp/TgVbMUxQ/09VUQYPkpERE6rhXEmScG/TBmOynEdB4+xJkDYT7HhG2AigiyjycaapzxJq5RkG6fRKotLuq59PEY4e3X0No1H35RBLDtx12VTwWM2VRZutf5ZzWRIURE4Yp6k1tgA14KOZDA0G5YSHflOMDx8mmKbdYArJIvtix5VtZ1kI6pzFfWm433KA6PukV3SfkSecvuwvhmyKx1JTWimJzYetWHGm0oLB4IGvGzNWUelGspAylZ1n44b5MvFelP9QhPWf41eZ6a4flS65a9+6bOqvdlUrsSHSf2MG5IZAKM9WZpVvRRpFa+mKdce7x+rLVrwlDewUV3C/NmN8wcUDeFtiKBqA5CFmX5sdfEwRaP8mqYmqTNo8ToZSkEdkVs37taWmXbdViivfC8QLeJqLu8ooQmmYqEEqanKdbvnWMQMAG3qaGGy0AzzAmHZGC106yuzsRIS6T9g52qrZnQ+jX34sulVmnuuxUwE0R+Ji42xbLjwbXR2iI/7x/ujykKP6EXPlMe/+GUvkvG+RfpCle9dRWm8MAAAAASUVORK5CYII=" style="top: 0; transform: scaleY(-1);" alt="">
+                    <ul id="count-hundrs" style="top:-51px;">
+                        <li>9<li>0<li>1<li>2<li>3<li>4<li>5<li>6<li>7<li>8<li>9
+                    </ul>
+                    <ul id="count-tens" style="top:-51px;">
+                        <li>9<li>0<li>1<li>2<li>3<li>4<li>5<li>6<li>7<li>8<li>9
+                    </ul>
+                    <ul id="count-ones" style="top:-51px;">
+                        <li>9<li>0<li>1<li>2<li>3<li>4<li>5<li>6<li>7<li>8<li>9<li>0
+                    </ul>
+                </div>
+                <!--p>消息数量({{ liveSubtitleData.length }})</p-->
             </div>
             <div class="wallCon">
                 <div id="w-message" class="wallCon-active">
@@ -140,6 +404,9 @@
                             <vote-show v-for="vote in maxVoteOptions" :vote="vote"></vote-show>
                         </ol>
                     </div>
+                    <p id="voteTipText">
+                        投票尚未开始
+                    </p>
                     <svg style="display: none;">
                         <symbol id="cup" x="0px" y="0px" width="25px" height="26px" viewBox="0 0 25 26" enable-background="new 0 0 25 26" xml:space="preserve">
                         <path fill="#F26856" d="M21.215,1.428c-0.744,0-1.438,0.213-2.024,0.579V0.865c0-0.478-0.394-0.865-0.88-0.865H6.69
@@ -170,7 +437,7 @@
                 <span><i class="fa fa-chevron-circle-up"></i></span>
                 <div id="w-ctr-btn">
                     <div id="btn-subtitle"><i class="fa fa-microphone" aria-hidden="true"></i>弹幕</div>
-                    <div id="btn-message"><i class="fa fa-commenting-o" aria-hidden="true"></i>消息</div>
+                    <div id="btn-message" class="w-ctr-btn-active"><i class="fa fa-commenting-o" aria-hidden="true"></i>消息</div>
                     <div id="btn-image"><i class="fa fa-image" aria-hidden="true"></i>图片</div>
                     <div id="btn-guests"><i class="fa fa-user-circle-o" aria-hidden="true"></i>来宾</div>
                     <div id="btn-vote"><i class="fa fa-bar-chart" aria-hidden="true"></i>投票</div>
@@ -188,7 +455,6 @@
     <script src="/static/js/vue.js"></script>
     <script type="text/x-template" id="message-template">
         <div>
-            <!--此处应可设置用户头像显示的方式，默认方形-->
             <header><img :src="msg.headimgurl"></header>
             <div>
                 <span>{{ msg.from }}</span>
@@ -267,11 +533,42 @@
                 host:window.location.host
             },
             watch: {
+                liveSubtitleData: function (){
+                    var ones = document.querySelector("#count-ones"),
+                        tens = document.querySelector("#count-tens"),
+                        hundrs = document.querySelector("#count-hundrs")
+                    var onesTop = parseInt(ones.style.top) - 32
+                    var tensTop = Math.ceil(parseInt(tens.style.top))
+                    var hundrsTop = Math.ceil(parseInt(hundrs.style.top))
+                    tensTop = Math.ceil(tensTop - 1/10 * 32)
+                    hundrsTop = Math.ceil(hundrsTop - 1/100 * 32)
+                    if(onesTop <= -371){
+                        ones.style.transition = "top 0.1s"
+                        onesTop = -51
+                        if(tensTop <= -371){
+                            tensTop = -51
+                            if(hundrsTop <= -371){
+                                hundrsTop = -51
+                            }
+                        }
+                    }else if(ones.style.transition == "top 0.1s"){
+                        ones.style.transition = "top 1s"
+                    }
+                    ones.style.top = onesTop + "px"
+                    tens.style.top = tensTop + "px"
+                    hundrs.style.top = hundrsTop + "px"
+                },
                 liveSubtitleArr: function (newarr) {
-                    if (newarr.length >= 21) this.liveSubtitleArr.splice(0, 5)
+                    if (newarr.length >= 21) this.liveSubtitleArr.splice(0, 6)
                 },
                 messageArr:function (newarr) {
-                    if(newarr.length > 5) this.messageArr.splice(0,5)
+                    if(newarr.length >= 10) this.messageArr.splice(0,5)
+                    else if(newarr.length > 5) this.messageArr.splice(0,newarr.length - 5)
+                    var animateArr = ['flipInY','flipInX','bounceIn','fadeDownBig','flip']
+                    var seekerArr = ['zoomInDown','jello','tada','rubberBand','shake','bounce']
+                    var i = Math.floor(Math.random() * animateArr.length),
+                        j = Math.floor(Math.random() * seekerArr.length)                    
+                    $("#w-message").children("div").removeAttr("class").addClass("animated " + animateArr[i] + " " + seekerArr[j])
                 },
                 liveSubtitleSeen:function (newval,oldval) {
                     if(newval){
@@ -295,18 +592,20 @@
                     }
                 },
                 activeVote:function(newval){
-                    var arr = []
-                    for(var i = 0;i < newval.options.length;i++){
-                        var t = {}
-                        Object.assign(t,newval.options[i])
-                        if(!newval.options[i].count) t.count = 0
-                        arr.push(t)
+                    if(!!newval.options){
+                        var arr = []
+                        for(var i = 0;i < newval.options.length;i++){
+                            var t = {}
+                            Object.assign(t,newval.options[i])
+                            if(!newval.options[i].count) t.count = 0
+                            arr.push(t)
+                        }
+                        arr.sort(function(a,b){
+                            return (parseInt(b.count) - parseInt(a.count))
+                        })
+                        this.voteOptions = arr;
+                        this.maxVoteOptions = this.voteOptions.slice(0,5)
                     }
-                    arr.sort(function(a,b){
-                        return (parseInt(b.count) - parseInt(a.count))
-                    })
-                    this.voteOptions = arr;
-                    this.maxVoteOptions = this.voteOptions.slice(0,5)
                 }
             },
             methods:{
@@ -319,23 +618,35 @@
                 },
                 intervalGetSubtitle:function () {
                     var count = 0;
-                    vm.liveSubtitleData.forEach(function (msg,index) {
-                        if(index >= vm.liveSubtitleCount && index < vm.liveSubtitleCount + 5) {
-                            msg.cssTop = vm.randomValue(60)
-                            msg.cssAnimationDelay = vm.randomValue()
-                            vm.liveSubtitleArr.push(msg)
-                            count++;
-                        }
-                    })
+                    for(var i = vm.liveSubtitleCount;i < vm.liveSubtitleCount + 6 && i < vm.liveSubtitleData.length;i++){
+                        var item = {}
+                        Object.assign(item,vm.liveSubtitleData[i])
+                        item.cssTop = vm.randomValue(60)
+                        item.cssAnimationDelay = vm.randomValue()
+                        vm.liveSubtitleArr.push(item)
+                        count++;
+                    }
                     vm.liveSubtitleCount += count
+                    //循环显示
+                    if(vm.liveSubtitleCount >= vm.liveSubtitleData.length){
+                        if(vm.liveSubtitleCount > 20)
+                            vm.liveSubtitleCount -= 20
+                        else
+                            vm.liveSubtitleCount = 0
+                    }
                 },
                 intervalGetMessage:function () {
-                    vm.liveSubtitleData.forEach(function (msg,index) {
-                        if(index >= vm.messageCount && index < vm.messageCount + 5) {
-                            vm.messageArr.push(msg)
-                            vm.messageCount ++
-                        }
-                    })
+                    for(var i = vm.messageCount;i < vm.messageCount + 5 && i < vm.liveSubtitleData.length;i++){
+                        vm.messageArr.push(vm.liveSubtitleData[i])
+                    }
+                    vm.messageCount = i
+                    //循环显示
+                    if(vm.messageCount >= vm.liveSubtitleData.length){
+                        if(vm.messageCount > 20)
+                            vm.messageCount -= 20
+                        else
+                            vm.messageCount = 0
+                    }
                 },
                 intervalMove:function () {
                     var p = []
@@ -356,32 +667,75 @@
                 }
             }
         })
-        setInterval(vm.intervalGetMessage,15*1000)
+        setInterval(vm.intervalGetMessage,10*1000)
 
         //初始化拉取数据
-        $.get("/api/allChat/getMessage", {
-                "page": 0,
+        var page = 0
+        function initGetMessage(){
+            if(!page) page = 0
+            page = parseInt(page)
+            $.get("/api/allChat/getMessage", {
+                "page": page,
                 "origin": window.location.href
             }, function(data){
                 if(data == "-1" || data.length <= 0){
                     console.log('[初始化数据:数据库为空]')
                 }else{
+                    var length = vm.liveSubtitleData.length
                     data.forEach(function(item){
                         //判断是图片还是消息
-                    if(!!item.MsgType&&item.MsgType=="image"){
-                        vm.imageData.push(item)
-                        console.info("[新图片入库]")
-                    }else{
-                        vm.liveSubtitleData.push(item)
-                        console.info("[新消息入库]")
-                    }
-                })
+                        if(!!item.MsgType&&item.MsgType=="image"){
+                            if(vm.imageData.length <= 15){
+                                vm.imageData.push(item)
+                                console.info("[新图片入库]")
+                            }
+                        }else{
+                            item.content = item.content.replace(/\<div\>.+\<\/div\>/g,"")
+                            vm.liveSubtitleData.push(item)
+                            console.info("[新消息入库]")
+                        }
+                    })
                     vm.liveSubtitleSeen = true
                     vm.intervalGetMessage()
                     vm.intervalGetSubtitle()
                     vm.messageCurrentView = "message-show"
+                    //计数
+                    for(var i = 0;i < vm.liveSubtitleData.length - length;i++){
+                        var ones = document.querySelector("#count-ones"),
+                            tens = document.querySelector("#count-tens"),
+                            hundrs = document.querySelector("#count-hundrs")
+                        var onesTop = parseInt(ones.style.top) - 32
+                        var tensTop = Math.ceil(parseInt(tens.style.top))
+                        var hundrsTop = Math.ceil(parseInt(hundrs.style.top))
+                        tensTop = Math.ceil(tensTop - 1/10 * 32)
+                        hundrsTop = Math.ceil(hundrsTop - 1/100 * 32)
+                        if(onesTop <= -371){
+                            ones.style.transition = "top 0.1s"
+                            onesTop = -51
+                            if(tensTop <= -371){
+                                tensTop = -51
+                                if(hundrsTop <= -371){
+                                    hundrsTop = -51
+                                }
+                            }
+                        }else if(ones.style.transition == "top 0.1s"){
+                            ones.style.transition = "top 1s"
+                        }
+                        ones.style.top = onesTop + "px"
+                        tens.style.top = tensTop + "px"
+                        hundrs.style.top = hundrsTop + "px"
+                    }
+                }
+                if(vm.liveSubtitleData.length <= 10 && page >= 2 && page <= 5){
+                    initGetMessage(++page)
+                }
+                if(++page <= 3){
+                    initGetMessage()
                 }
             })
+            
+        }
+        initGetMessage()
 
         var liveIo = io('/allChat')
         liveIo.on("connect",function () {
@@ -399,6 +753,32 @@
             //判断是图片还是消息
             if(!!msg.MsgType&&msg.MsgType=="image"){
                 vm.imageData.push(msg)
+                if(!$("#w-image").hasClass('wallCon-active')){
+                    if(Math.floor(Math.random()) < 1){
+                        $("#w-message").removeClass('wallCon-active')
+                        $("#w-image").addClass('wallCon-active')
+                        var id = parseInt($("#slider-content").children(".slider__images").children("div:last-child").attr("data-id"))
+                        setTimeout(function(){
+                            slider.startTransition(id+1)
+                        },100)
+                        function intervalImageHidden(){
+                            var activeMenu = $("#w-ctr-btn").children(".w-ctr-btn-active").attr("id")
+                            if('btn-image' == activeMenu){
+                                
+                            }else if('btn-guests' == activeMenu || 'btn-lottery' == activeMenu || 'btn-vote' == activeMenu){
+                                $("#w-image").removeClass('wallCon-active')
+                            }
+                            else if(slider.inTransit){
+                                setTimeout(intervalImageHidden,3000)
+                                return
+                            }else{
+                                $("#w-message").addClass('wallCon-active')
+                                $("#w-image").removeClass('wallCon-active')
+                            }
+                        }
+                        setTimeout(intervalImageHidden,5000)
+                    }
+                }
                 console.info("[新图片入库]")
             }else{
                 vm.liveSubtitleData.push(msg)
@@ -542,32 +922,99 @@
                         if(temp.options[i].id == info.res[i].id){
                             temp.options[i].count = info.res[i].count
                         }
+                        if(!temp.options[i].imgsrc){
+                            temp.options[i].imgsrc = "/static/image/logo.png"
+                        }
                     }
                     vm.activeVote = temp
                 }
             } 
         })
 
+        liveIo.on("switchVote",function(info){
+            if(!!info){
+                vm.activeVote = info
+                $("#w-vote").children("div").css({
+                    display:"block"
+                })
+                $("#voteTipText").css({
+                    display:"none"
+                })
+            }else{
+                vm.activeVote = {
+                    title: "暂无"
+                }
+                $("#w-vote").children("div").css({
+                    display:"none"
+                })
+                $("#voteTipText").css({
+                    display:"block"
+                })
+            }
+        })
+
         //初始化拉取投票数据
         $.get('/api/wall/activeVote?username=<%= username %>',function(data){
             if(!!data && data != "-1"){
                 vm.activeVote = data
-                console.log(vm.activeVote)
             }else{
-                console.log("暂未开启投票")
+                vm.activeVote = {
+                    title:"暂无"
+                }
+                // $("#w-vote").children("div").css({
+                //     display:"none"
+                // })
+                $("#voteTipText").css({
+                    display:"block"
+                })
             }
         })
     </script>
     
     <script>
         $(function ($) {
-            $("#background").starfield({
-                starDensity: 0.5,
-                mouseScale: 1,
-                seedMovement: false,
-                BOUNDX: 1000,
-                BOUNDY: 500
-            })
+             <% if(UI.background == "default" || UI.background == "starfield" || !UI.background){ %>
+                $("#background").starfield({
+                    starDensity: 0.5,
+                    mouseScale: 1,
+                    seedMovement: false,
+                    BOUNDX: 1000,
+                    BOUNDY: 500
+                })
+            <% }else if(UI.bgtext != "0"){ %>
+            canvas = document.createElement("canvas")
+            canvas.width = "600"
+            canvas.height = "400"
+            document.querySelector("#background").appendChild(canvas)
+            // canvas = document.querySelector("canvas")
+            canvas.style.position = "absolute"
+            canvas.style.left = "calc(50% - "+ canvas.width/2 +"px)"
+            canvas.style.top = "calc(50% - "+ canvas.height/2 +"px)"
+            if (canvas.getContext) {
+				var ctx = canvas.getContext('2d');
+                var width = canvas.width;
+			    var height = canvas.height; 
+				// clear canvas
+				ctx.clearRect(0, 0, width, height);
+				ctx.fillStyle = "rgba(255,255,255,0)";
+				ctx.fillRect(0, 0, width, height);
+
+				// 添加LOGO 或文字
+                ctx.save()
+                ctx.lineWidth = 1
+                ctx.font = '80px 宋体'
+                ctx.textAlign = 'center'
+				var gradient = ctx.createLinearGradient(0,0,width,0)
+				gradient.addColorStop('0','magenta')
+				gradient.addColorStop('0.2','red')
+				gradient.addColorStop('0.5','blue')
+				gradient.addColorStop('1','red')
+				ctx.strokeStyle = gradient
+                ctx.strokeText('<%= UI.bgtextContent %>',width/2,height/2)
+                ctx.restore()
+            }
+            <% } %>
+
             var iconEventArr = [
                 ['#btn-message','#w-message','fa-commenting','fa-commenting-o'],
                 ['#btn-image','#w-image','fa-image','fa-photo'],
@@ -580,6 +1027,8 @@
                 activeMenu:['#btn-message','#w-message','fa-commenting-o','fa-commenting'],
                 arr: iconEventArr,
                 extraEvent:function(id,id_link,that){
+                    $(id).parent("#w-ctr-btn").children("div").removeClass("w-ctr-btn-active")
+                    $(id).addClass("w-ctr-btn-active")
                     if(id_link == "#w-image"){
                         //设计时可以做判断是否需要全屏显示
                         $("#w-image").css({
@@ -635,7 +1084,7 @@
                 }
                 setTimeout(intervalImageHidden,5000)
             }
-            setTimeout(intervalImageShow,6000);  
+            setTimeout(intervalImageShow,120*1000);  
         })
     </script>
     <script src="/static/plus/js/carousel.js"></script>

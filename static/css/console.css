@@ -381,7 +381,7 @@ text-align: center;
     transition: background-color 1s;
     border-radius: 2em;
 }
-.c-r-s-panel-vote-item-options > p{
+.c-r-s-panel-vote-item-options > p,#setting-btn > p{
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -396,7 +396,7 @@ text-align: center;
     right: -15px;
 }
 
-#c-r-s-panel-host-panel{
+#c-r-s-panel-host-panel,#settings-btn{
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -407,7 +407,7 @@ text-align: center;
     color: #d17c78;    
 }
 
-#c-r-s-panel-host-input,#c-r-s-panel-host-input-number{
+#c-r-s-panel-host-input,#c-r-s-panel-host-input-number,#bgtext-input{
     flex: 1;
     max-height: 100px;
     width: 100%;
@@ -416,7 +416,7 @@ text-align: center;
     justify-content: space-around;
     align-items: center;
 }
-#c-r-s-panel-host-input > input,#c-r-s-panel-host-input-number > input{
+#c-r-s-panel-host-input > input,#c-r-s-panel-host-input-number > input,#bgtext-input > input{
     font-size: 3em;
     border: none;
     outline: none;
@@ -424,21 +424,21 @@ text-align: center;
     color: #d17c78;
     background: transparent;
 }
-#c-r-s-panel-host-input > input{
+#c-r-s-panel-host-input > input,#bgtext-input > input{
     width: 100%;
     padding: 5px 1em 5px 0;
 }
 #c-r-s-panel-host-input-number > input{
     text-align: center;
 }
-#c-r-s-panel-host-input > i {
+#c-r-s-panel-host-input > i ,#bgtext-input > i{
     position: absolute;
     right: 0;
     font-size: 2em;
     color: green;
     cursor: pointer;
 }
-#c-r-s-panel-host-input > i:first-child {
+#c-r-s-panel-host-input > i:first-child, #bgtext-input > i:first-child {
     right: 0;
     font-size: 1em;
     color: #d17c78;
@@ -447,4 +447,71 @@ text-align: center;
 }
 #c-r-s-panel-host-input-number > input{
     width: auto;
+}
+
+#settings-btn{
+    flex: 3;
+    display: flex;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+#background-setting{
+    flex: 6;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: #d17c78;
+}
+#background-setting > div{
+    width: 50%;
+    max-width: 300px;
+    padding: 20px;
+    text-align: center;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+#background-setting img{
+    width: 100%;
+}
+#bgtext-input > input{
+    font-size: 2em !important;
+}
+#bgtext-input > i:first-child{
+    bottom: -1em !important;
+}
+#settings-btn > p > span{
+    padding: 0 5px;
+    border-radius: 2em;
+    transition: background 1s;
+    cursor: pointer;
+}
+#settings-save{
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-top: 1px solid rgba(209, 124, 120,.3);
+    border-radius: 50%;
+}
+#settings-save > span{
+    font-size: 20px;
+    color: #eeeeee;
+    border-radius: 1em;
+    background: #31b0d5;
+    text-decoration: none;
+    padding: 2px 5px;
+    cursor: pointer;
+}
+
+#background-setting::-webkit-scrollbar,#setting-btn::-webkit-scrollbar{
+    width: 5px;
+}
+#background-setting::-webkit-scrollbar-track,#setting-btn::-webkit-scrollbar-track{
+    border-radius: 2em;
+    background: rgba(209, 124, 120,.3);
+}
+#background-setting::-webkit-scrollbar-thumb,#setting-btn::-webkit-scrollbar-thumb{
+    border-radius: 2em;
+    background: rgb(57,138,202);
 }

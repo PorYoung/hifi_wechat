@@ -94,7 +94,7 @@ export default class {
             //利用message.MsgId 查重
             //注意编码问题
             //1:跳转到授权界面获取code,并用code获取access_token
-            if (message.content === '1') {
+            // if (message.content === '1') {
                 content.MsgType = 'news'
                 content.news = []
                 let news1 = {
@@ -104,15 +104,17 @@ export default class {
                     url: config.urlPrefix + '/start?username=Por'
                 }
                 content.news.push(news1)
-            } else if (message.content === '2') {
-                content.MsgType = 'text'
-                content.content = 'hi'
-            } else {
-                content.MsgType = 'text'
-                // 后续考虑实现
-                // content.content = '别调戏我啊，回复3去调戏机器人吧~.~'
-                content.content = "Sorry, I can't understand *_*"
-            }
+            // }
+            // } else if (message.content === '2') {
+            //     content.MsgType = 'text'
+            //     content.content = 'hi'
+            // }
+            // } else {
+            //     content.MsgType = 'text'
+            //     // 后续考虑实现
+            //     // content.content = '别调戏我啊，回复3去调戏机器人吧~.~'
+            //     content.content = "Sorry, I can't understand *_*"
+            // }
         } else if (message.msgtype === 'image') {
             content.MsgType = 'image'
             content.media_id = message.mediaid

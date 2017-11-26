@@ -7,6 +7,7 @@ const router = express.Router()
 router
 .get('/wall/flags',Permission.loginRequire,Wall.getFlags)
 .post('/wall/flags',Permission.loginRequire,Wall.setFlags)
+.post('/wall/setUI',Permission.loginRequire,Wall.setUI)
 .get('/wall/guests',Permission.loginRequire,Wall.getGuests)
 .get('/wall/votes',Permission.loginRequire,Wall.getVotes)
 .get('/wall/activeVote',Permission.loginRequire,Wall.getActiveVote)

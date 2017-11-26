@@ -10,7 +10,8 @@ const wallSchema = new mongoose.Schema({
     activeVote:{},
     guests: Array,
     QRSrc: String,
-    QRTicket: String
+    QRTicket: String,
+    UI: Object
 })
 const wall = mongoose.model('wall', wallSchema)
 export default wall

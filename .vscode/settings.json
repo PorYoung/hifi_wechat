@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        // extension name : html
+        "*.ejs": "html"
+    }
+}

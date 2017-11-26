@@ -4,6 +4,13 @@ html body{
     color: #eeeeee;
 }
 #background{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+.starfield{
     transform-style: preserve-3d;
     -webkit-animation: translateView 100s linear alternate infinite;
     -o-animation: translateView 100s linear alternate infinite;
@@ -91,20 +98,20 @@ html body{
     justify-content: space-between;
     text-align: center;
 }
-.wallHd > p{
+.wallHd > p,.wallHd > div{
     max-height: 80px;
 }
 .wallHd > p:nth-child(1){
-    flex:2 1 20%;
+    flex:1 1 10%;
 }
 .wallHd > p:nth-child(1) > img{
     height: 100%;
 }
 .wallHd > p:nth-child(2){
-    flex:6 1 60%;
+    flex:8 1 80%;
 }
-.wallHd > p:nth-child(3){
-    flex:2 1 20%;
+.wallHd > div:nth-child(3){
+    white-space: nowrap;
 }
 
 .wallCon{
@@ -315,7 +322,7 @@ Leaderboard
 }
 
 .leaderboard::-webkit-scrollbar{
-    width: 3px;
+    width: 5px;
 }
 .leaderboard::-webkit-scrollbar-track{
     background: rgba(57,138,202,.1);
@@ -489,4 +496,14 @@ Leaderboard
   opacity: .5;
   -webkit-transition: all .35s ease-in-out;
   transition: all .35s ease-in-out;
+}
+
+#voteTipText{
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    font-size: 3em;
+    left: calc(50% - 150px);
+    top: calc(50% - 100px);
+    display: none;
 }

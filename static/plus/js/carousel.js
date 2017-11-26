@@ -142,7 +142,6 @@ var Slider = function () {
   Slider.prototype.positionImage = function positionImage(_ref5) {
     var xCoeff = _ref5.xCoeff;
     var yCoeff = _ref5.yCoeff;
-
     var maxImgOffset = 1;
     var currentImage = this.activeImg[0].children[0];
 
@@ -184,10 +183,8 @@ var Slider = function () {
     nextText.classList.add(activeTextClass);
 
     el.style.setProperty('--from-left', nextId);
-
     currentImg.classList.remove(activeImgClass);
     currentImg.classList.add(subActiveClass);
-
     if (currentId < nextId) {
       outClass = imgClass + '--next';
       inClass = imgClass + '--prev';
@@ -197,14 +194,12 @@ var Slider = function () {
     }
 
     nextImg.classList.add(outClass);
-
+    
     requestAnimationFrame(function () {
       nextImg.classList.add(transitClass, activeImgClass);
       nextImg.classList.remove(outClass);
-
       _this.animationStopped = false;
       _this.positionImage(_this.getMouseCoefficients());
-
       currentImg.classList.add(transitClass, inClass);
       currentImg.addEventListener('transitionend', onImageTransitionEnd);
     });
@@ -246,15 +241,16 @@ var Slider = function () {
     if (this.inTransit) return;
     var nextId = +this.activeImg[0].dataset.id + 1;
     if (nextId > this.images.length) nextId = 1;
-    this.startTransition(nextId);
+    if(nextId != this.activeImg[0].dataset.id)
+      this.startTransition(nextId);
   };
 
   Slider.prototype.prev = function prev() {
     if (this.inTransit) return;
     var nextId = +this.activeImg[0].dataset.id - 1;
     if (nextId < 1) nextId = this.images.length;
-
-    this.startTransition(nextId);
+    if(nextId != this.activeImg[0].dataset.id)
+      this.startTransition(nextId);
   };
 
   Slider.prototype.switchBackgroundImage = function switchBackgroundImage(nextId) {
