@@ -224,12 +224,17 @@
             bottom: 50px;
             font-size: 3em;
             text-align: center;
-            color: #31b0d5;
+            color: rgb(253, 122, 0);
             left: 0;
             right: 0;
+            background: rgba(175, 169, 169, 0.3);
+            border-radius: 50% 50% 0 0;
         }
         #plusPanel > i{
             width: 2.2em;
+        }
+        #plusPanel > i > span{
+            font-size: 20px !important;
         }
         #plusBtnWrap{
             display: inline-flex;
@@ -408,8 +413,8 @@
 </div>
 <!--功能键-->
 <div id="plusPanel">
-    <i class="fa fa-photo" id="wexinImage" aria-hidden="true"></i>
-    <i class="fa fa-bar-chart" id="voteShow" aria-hidden="true"></i>
+    <i class="fa fa-photo" id="wexinImage" aria-hidden="true"><span>图片</span></i>
+    <i class="fa fa-bar-chart" id="voteShow" aria-hidden="true"><span>投票</span></i>
 </div>
 <!--通知-->
 <div id="notification"></div>
@@ -844,7 +849,7 @@
                 allChat.emit("vote",voteItem)
                 clearMyLoading()
                 html = "<i class='fa fa-check-circle-o fa-4x fa-fw' style='color: #00EE00'></i><span class='sr-only'>Success</span>"
-                clearMyLoading = myLoading("您贡献上了自己的一票 ^_^ ~",html)
+                clearMyLoading = myLoading("您贡献上了自己的一票😁",html)
                 setTimeout(function () {
                     clearMyLoading()
                 },1200)
@@ -871,13 +876,80 @@
                 }
             } 
         })
+        allChat.on("switchVote",function(data){
+            if(!!data){
+                var html = `<div id="votePanel" data-vote-id="${data.voteId}">
+                    <div style="border-bottom:1px solid rgb(57,138,202);text-align:center;">
+                        <span style="flex:3;padding:3px 5px;background:rgba(57,138,202,.7);border-radius:0 2em 2em 0;">投票主题</span>
+                        <span style="flex:7;color:white;">${data.title}</span>
+                    </div>
+                    `
+                for(var i = 0;i < data.options.length;i++){
+                    html+=`<p data-option-id="${data.options[i].id}"  data-vote-count="${data.options[i].count || 0}">
+                        <span>${data.options[i].content}</span>
+                        <span class="voteCount">${data.options[i].count || 0}</span>
+                        `
+                    if(data.settings.type == "0"){
+                        html += `<i><img src="${data.options[i].imgsrc}"></i></p>`
+                    }
+                }
+                html += `<div id="voteSubmit">
+                    <span>选好了吗😉</span>
+                    <span>okay!👌</span></div></div>`
+                $("#voteTipText").parent().html(html)
+                $("#votePanel").children("p").on("click",function(){
+                    if($(this).attr("data-vote-choose") == "1"){
+                        $(this).attr({"data-vote-choose":"0"}).css({
+                            background: "initial",
+                            transform: "scale(1,1)"
+                        },200)
+                    }else{
+                        if(data.settings.check == "0"){
+                            $("[data-vote-choose='1']").attr({"data-vote-choose":"0"}).css({
+                                background: "initial",
+                                transform: "scale(1,1)"
+                            },200)
+                        }
+                        $(this).attr({"data-vote-choose":"1"}).css({
+                            background: "rgba(100, 205, 100, 0.3)",
+                            transform: "scale(1.1,1.1)"
+                        },200)
+                    }
+                })
+                $("#voteSubmit").click(function(){
+                    //验证是否投过票
+                    var info = {
+                        nickname: "<%= nickname %>",
+                        openid: "<%= openid %>",
+                        voteId: data.voteId
+                    }
+                    allChat.emit("vote_check",info)
+                })
+            }else{
+                $("#votePanel").children("p").off()
+                $("#voteSubmit").off()
+                $("#votePanel").parent().html('<p id="voteTipText" style="text-align:center;">暂无投票活动</p>')
+            }
+        })
+
+        allChat.on("lottery",function(info){
+            if(!!info && info.openid == "<%= openid %>"){
+                var html = "<i class='fa fa-spinner fa-pulse fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>"
+                var clearMyLoading = myLoading("恭喜您被被抽中了😁",html)
+                setTimeout(function(){
+                    clearMyLoading()
+                },3000)
+            }
+        })
+
         $("#sendBtn").click(function () {
             var msg = {
                 from: "<%= nickname %>",
                 content: $("#inputText").html(),
                 headimgurl: "<%= headimgurl %>",
                 sex: '<%= sex %>',
-                province: '<%= province %>'
+                province: '<%= province %>',
+                openid: '<%= openid %>'
             }
             //内容为空则返回
             if(!msg.content) return;
@@ -997,9 +1069,27 @@
                     //验证是否投过票
                     var info = {
                         nickname: "<%= nickname %>",
-                        openid: "<%= openid %>"
+                        openid: "<%= openid %>",
+                        voteId: data.voteId
                     }
                     allChat.emit("vote_check",info)
+                })
+            }else{
+                $('#voteShow').PopupLayer({
+                    content: '<p id="voteTipText" style="text-align:center;">暂无投票活动</p>', // 内容，可以传入纯文本或类名或html
+                    target: "body", // 把弹出层添加到的目标节点
+                    to: "right",   // 向哪个方向展开
+                    screenRatio: .7, // 占屏幕百分比
+                    blur: true, // 是否开启毛玻璃效果
+                    blurAreas: "#listPanel",    //默认body > *
+                    color: "#000", // 文本颜色
+                    backgroundColor: "#eee", // 背景颜色
+                    contentToggle: false, // 点击content是否关闭弹出层
+                    // closeBtn: null,  // 指定关闭按钮
+                    voteSettings: data.settings
+                    // closeCallbackBefore: null,   //关闭前执行的函数
+                    // openCallback: null, // 展开的回调
+                    // closeCallback: null // 关闭的回调
                 })
             }
         })

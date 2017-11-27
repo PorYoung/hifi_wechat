@@ -148,3 +148,67 @@
             return  new Blob([new Uint8Array(array)], {type: 'image/png'});
         }
     }
+
+
+    //将逐帧图片以动画连续显示
+    var picToAnimate = function (options){
+        var config = {
+            picWrap : "#picWrap",
+            _length : 192,
+            _height : 192,
+            ratio : 1,
+            reverse: true,
+            loop: true,
+            src : "/static/image/Animation3.png"
+        }
+        Object.assign(config,options)
+        config.picWrap = document.querySelector(config.picWrap)
+        var image = new Image(),
+            _x = 0,
+            _y = 0,
+            _timer = null
+        image.src = config.src
+        var wn = parseInt(image.width) / 192,
+            hn = parseInt(image.height) / 192
+        config.picWrap.style.backgroundSize = config.ratio * config._length * wn + "px " + config.ratio * config._height * hn + "px"
+        config.picWrap.style.width = config.ratio * config._length + "px"
+        config.picWrap.style.height = config.ratio * config._height + "px"
+        function animate(){
+            config.picWrap.style.backgroundPosition = _x + "px " + _y + "px"
+            _x -= config.ratio * config._length
+            if(_x <= -config.ratio * config._length * wn){
+                _x = 0
+                _y -= config.ratio * config._height
+                if(_y <= -config.ratio * config._height * hn){
+                    clearInterval(_timer)
+                    _x = -config.ratio * config._length * (wn-1)
+                    _y = -config.ratio * config._height * (hn-1)
+                    if(!!config.reverse){
+                        _timer = setInterval(animateReverse,120)
+                    }
+                }
+            }
+        }
+        function animateReverse(){
+            config.picWrap.style.backgroundPosition = _x + "px " + _y + "px"
+            _x += config.ratio * config._length
+            if(_x > 0){
+                _x = -config.ratio * config._length * (wn-1)
+                _y += config.ratio * config._height
+                if(_y > 0){
+                    clearInterval(_timer)
+                    _x =_y = 0
+                    if(!!config.loop){
+                        _timer = setInterval(animate,120)
+                    }
+                }
+            }
+
+        }
+        this.startAnimate = function(){
+            _timer = setInterval(animate,120)
+        }
+        this.stopAnimate = function(){
+            clearInterval(_timer)
+        }
+    }

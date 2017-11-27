@@ -11,6 +11,7 @@ router
 .get('/wall/guests',Permission.loginRequire,Wall.getGuests)
 .get('/wall/votes',Permission.loginRequire,Wall.getVotes)
 .get('/wall/activeVote',Permission.loginRequire,Wall.getActiveVote)
+.get('/wall/connections',Permission.loginRequire,Wall.getConnections)
 .get('/wall/QRSrc',Permission.loginRequire,Wall.getQRSrc,Wechat.getQR)
 .post('/wall/deleteGuest',Permission.loginRequire,Wall.deleteGuest)
 .post('/wall/guests',Permission.loginRequire,Wall.saveGuests)

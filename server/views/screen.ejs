@@ -72,9 +72,7 @@
 		}
         #count { 
 		    	display: inline-block; height: 3.6rem; overflow: hidden; 
-			    /*border: 1px solid #000;*/
 			    top: 1rem;
-			    /*background-image: linear-gradient(#000 0%,#3d3d3d 50%,#000 100%);*/
 			    position: relative;
                 z-index: 0;
         } 
@@ -87,11 +85,10 @@
             position: relative; 
             top: -1.3rem; 
             line-height: 32px; 
-            /*color: #fff;*/
             font-size: 2em;
             transition: top 1s;
         }  
-        #count img{position:absolute;bottom:0;z-index:999;}
+        #count img{position:absolute;bottom:0;z-index:1;}
 
         <% if(UI.avatar == "circle"){ %>
         #w-message > div > header > img{
@@ -398,7 +395,7 @@
                             <svg class="ico-cup">
                                 <use xlink:href="#cup"></use>
                             </svg>
-                            {{ activeVote.title }}
+                            RANKING
                         </header>
                         <ol>
                             <vote-show v-for="vote in maxVoteOptions" :vote="vote"></vote-show>
@@ -429,7 +426,24 @@
                             </symbol>
                         </svg>
                 </div>
-                <div id="w-lottery"></div>
+                <div id="w-lottery">
+                    <div id="lottery-panel">
+                        <div id="lottery-btn"><div id="lotteryBtnAnimate">等待开奖^_^</div></div>
+                        <div id="lottery-loading"><div id="lotteryLoadingAnimate"></div></div>
+                        <div id="lottery-result"></div>
+                    </div>
+                    <div class="leaderboard">
+                        <header>
+                            <svg class="ico-cup">
+                                <use xlink:href="#cup"></use>
+                            </svg>
+                            PIONEER
+                        </header>
+                        <ol>
+                            <connection-show v-for="con in connections" :con="con"></connection-show>
+                        </ol>
+                    </div>
+                </div>
             </div>
             <div class="wallCtr">
                 <!--此处应可修改info信息和显示效果-->
@@ -485,11 +499,19 @@
             <small>{{ vote.count || 0 }}</small>
         </li>
     </script>
+    <script type="text/x-template" id="connection-template">
+        <li>
+            <i><img :src="con.headimgurl"></i>
+            <mark></mark>
+            <small>{{ con.times || 0 }}</small>
+        </li>
+    </script>
     <script>
         //初始化加载设置
         const config = {
             guests: [],
-            activeVote: {}
+            activeVote: {},
+            connections:[]
         }   
         Vue.component('live-subtitle',{
             template:'<div style="overflow:visible;"><img :src="msg.headimgurl" style="margin-left:-5px;margin-right:5px;width:40px;height:40px;" ><span v-html="msg.content">{{ msg.content }}</span></div>',
@@ -511,6 +533,10 @@
             template:'#vote-template',
             props:['vote']
         })
+        Vue.component('connection-show',{
+            template:'#connection-template',
+            props:['con']
+        })
         var vm = new Vue({
             el:'#app',
             data:{
@@ -518,6 +544,7 @@
                 imageData:[],
                 liveSubtitleArr:[],
                 liveSubtitleCount:0,
+                connections:[],
                 messageArr:[],
                 messageCount:0,
                 messageCurrentView:undefined,
@@ -637,7 +664,17 @@
                 },
                 intervalGetMessage:function () {
                     for(var i = vm.messageCount;i < vm.messageCount + 5 && i < vm.liveSubtitleData.length;i++){
-                        vm.messageArr.push(vm.liveSubtitleData[i])
+                        var item = vm.liveSubtitleData[i]
+                        item.content = item.content.replace(/\<div\>.+\<\/div\>/,"😁")
+                        item.content = item.content.replace(/\<div\>/g,"😏")
+                        item.content = item.content.replace(/\<\/div\>/g,"😏")
+                        item.content = item.content.replace(/\<br\>/g,"😏")
+                        item.content = item.content.replace(/\<p\>/g,"😏")
+                        item.content = item.content.replace(/\<\/p\>/g,"😏")
+                        if(!item.headimgurl){
+                            item.headimgurl = "/static/image/avatar_default.jpg"
+                        }
+                        vm.messageArr.push(item)
                     }
                     vm.messageCount = i
                     //循环显示
@@ -690,7 +727,8 @@
                                 console.info("[新图片入库]")
                             }
                         }else{
-                            item.content = item.content.replace(/\<div\>.+\<\/div\>/g,"")
+                            // item.content = item.content.replace(/\<div\>.+\<\/div\>/g,"...")
+                            // item.content = item.content.replace(/\<div\>.+\<\/div\>/g,"😁")
                             vm.liveSubtitleData.push(item)
                             console.info("[新消息入库]")
                         }
@@ -788,6 +826,25 @@
                 vm.intervalGetSubtitle()
                 vm.intervalGetMessage()
             }
+            for(var i = 0;i < config.connections.length;i++){
+                if(config.connections[i].openid == msg.openid){
+                    config.connections[i].times = msg.times
+                    break
+                }
+            }
+            if(i == config.connections.length){
+                console.log(msg)
+                config.connections.push({
+                    nickname:msg.from,
+                    openid:msg.openid,
+                    headimgurl: msg.headimgurl,
+                    times:1
+                })
+            }
+            config.connections.sort(function(a,b){
+                return parseInt(b.times) - parseInt(a.times)
+            })
+            vm.connections = config.connections.slice(0,config.connections.length<=5?config.connections.length:5)
         })
         var liveSubtitleIconArr = [
             ['#btn-subtitle','#liveSubtitle','fa-microphone','fa-microphone-slash']
@@ -928,6 +985,24 @@
                     }
                     vm.activeVote = temp
                 }
+                for(var j = 0;j < config.connections.length;j++){
+                    if(config.connections[j].openid == info.openid){
+                        config.connections[j].times = info.times
+                        break
+                    }
+                }
+                if(j == config.connections.length){
+                    config.connections.push({
+                        nickname:info.from,
+                        openid:info.openid,
+                        headimgurl: info.headimgurl,
+                        times:1
+                    })
+                }
+                config.connections.sort(function(a,b){
+                    return parseInt(b.times) - parseInt(a.times)
+                })
+                vm.connections = config.connections.slice(0,config.connections.length<=5?config.connections.length:5)
             } 
         })
 
@@ -968,6 +1043,19 @@
                     display:"block"
                 })
             }
+        })
+        //初始化拉取连接用户信息
+        $.get('/api/wall/connections?username=<%= username %>',function(data){
+            data.forEach(function(item){
+                if(!item.times){
+                    return item.times = 0
+                }
+            })
+            config.connections = data
+            config.connections.sort(function(a,b){
+                return parseInt(b.times) - parseInt(a.times)
+            })
+            vm.connections = config.connections.slice(0,config.connections.length<=5?config.connections.length:5)
         })
     </script>
     
@@ -1084,7 +1172,81 @@
                 }
                 setTimeout(intervalImageHidden,5000)
             }
-            setTimeout(intervalImageShow,120*1000);  
+            setTimeout(intervalImageShow,120*1000);
+
+            var lotteryBtnAnimate = new picToAnimate({
+                picWrap:"#lotteryBtnAnimate",
+                ratio: 1,
+                src: "/static/image/Animation3.png"
+            })
+            lotteryBtnAnimate.startAnimate()
+            
+            $("#lottery-btn").click(function(){
+                // $("#lottery-btn").off()
+                lotteryBtnAnimate.stopAnimate()
+                $(this).hide()
+                $("#lottery-result").hide()
+                $("#lottery-loading").show()
+                var lotteryLoaadingAnimate = new picToAnimate({
+                    picWrap:"#lotteryLoadingAnimate",
+                    ratio: 3,
+                    reverse: false,
+                    loop:false,
+                    src: "/static/image/Animation1.png"
+                })
+                lotteryLoaadingAnimate.startAnimate()
+                setTimeout(function(){
+                    var timesArr = []
+                    for(var idx = 0;idx < config.connections.length;idx++){
+                        // if(config.connections[idx].times == 0){
+                        //     break
+                        // }
+                        if(idx == 0){
+                            timesArr.push(parseInt(config.connections[idx].times+1))
+                        }else{
+                            timesArr.push(timesArr[idx - 1] + config.connections[idx].times + 1)
+                        }
+                    }
+                    console.log(timesArr)
+                    var lottery = null,lotteryLoopTimes = 3
+                    while((!lottery || (!!lottery.lottery && lottery.lottery == "1")) && lotteryLoopTimes-- > 0){
+                        var idx = Math.floor(Math.random() * timesArr[timesArr.length - 1])             
+                        var pos = 0
+                        binaryFind(0,timesArr.length)
+                        function binaryFind(left,right){
+                            var center = Math.floor((left + right) / 2)
+                            if(idx == timesArr[center]){
+                                pos = center
+                            }else if(left == center){
+                                if(idx > timesArr[left]){
+                                    pos = left + 1
+                                }else{
+                                    pos = left
+                                }
+                            }else if(idx < timesArr[center]){
+                                return binaryFind(left,center)
+                            }else{
+                                return binaryFind(center,right)
+                            }
+                        }
+                        config.connections[pos].lottery = "1"
+                        lottery = config.connections[pos]
+                    }
+                    var html = `
+                    <div class="lottery-result">
+                        <p><img src="${lottery.headimgurl}"></p>
+                        <p><span>${lottery.nickname}</span></p>
+                    </div>
+                    `
+                    $("#lottery-result").append(html)
+                    lotteryLoaadingAnimate.stopAnimate()                    
+                    $("#lottery-loading").hide()
+                    $("#lottery-btn").show()
+                    $("#lottery-result").show()
+                    lotteryBtnAnimate.startAnimate()
+                    liveIo.emit("lottery",lottery)
+                },2500)
+            })
         })
     </script>
     <script src="/static/plus/js/carousel.js"></script>

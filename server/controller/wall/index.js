@@ -218,6 +218,11 @@ export default class {
         return res.send(wall.activeVote)
     }
 
+    static async getConnections(req,res,next){
+        let info = await db.connection.find({},{access_token:0,expires_in:0,refresh_token:0,_id:0})
+        if(!info) return res.send("-1")
+        return res.send(info)
+    }
     static async getQRSrc(req,res,next){
         let username = req.query.username
         if(!username) return res.send('-1')

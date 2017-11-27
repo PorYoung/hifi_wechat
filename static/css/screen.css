@@ -117,6 +117,7 @@ html body{
 .wallCon{
     width: 100%;
     flex: 1;
+    z-index: 1;
 }
 .wallCon > div{
     display: none;
@@ -163,9 +164,6 @@ html body{
     width: 100%;
     max-height: 120px;
     cursor: pointer;
-}
-#w-message > div > header{
-    /*flex: 1 0 10%;*/
 }
 #w-message > div > header > img{
     width: 60px;
@@ -273,7 +271,7 @@ html body{
     bottom: 100px;
 }
 
-#w-vote{
+#w-vote,#w-lottery{
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
@@ -506,4 +504,94 @@ Leaderboard
     left: calc(50% - 150px);
     top: calc(50% - 100px);
     display: none;
+}
+
+#w-lottery > div:first-child{
+    width: 70%;
+}
+#w-lottery .leaderboard{
+    width: 100px;
+}
+#w-lottery .leaderboard > ol > li{
+    flex-direction: column;
+}
+#w-lottery .leaderboard mark{
+    display: none;
+}
+#w-lottery .leaderboard small{
+    font-size: 2em;
+}
+#w-lottery .leaderboard img{
+    width: 50px;
+    height: 50px;
+}
+
+#lottery-panel{
+    box-shadow: 0 0 8px 2px rgba(102, 51, 153, .7);
+}
+#lottery-btn{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding: 80px;
+    font-size: 3em;
+    /* box-shadow: 0 0 8px 2px rgba(102, 51, 153, .7); */
+    cursor: pointer;
+}
+
+#lotteryBtnAnimate{
+    width: 192px;
+    height: 192px;
+    background-image: url(/static/image/Animation3.png);
+    background-size: 960px;
+    background-repeat: no-repeat;
+}
+
+#lottery-loading{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    /* box-shadow: 0 0 8px 2px rgba(102, 51, 153, .7); */
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+#lotteryLoadingAnimate{
+    background-image: url(/static/image/Animation1.png);
+    background-repeat: no-repeat;
+}
+
+#lottery-result{
+    min-height: 100px;
+    box-shadow: 0 0 8px 2px rgba(102, 51, 153, .7);
+    display: flex;
+    justify-content: space-around;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: center;
+}
+
+#lottery-result::-webkit-scrollbar{
+    height: 5px;
+}
+#lottery-result::-webkit-scrollbar-track{
+    background: rgba(57,138,202,.1);
+}
+#lottery-result::-webkit-scrollbar-thumb{
+    /* background: #868686; */
+    background: #FFA54F;
+    border-radius: 2em;
+}
+.lottery-result{
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-around;
+    min-width: 80px;
+    text-align: center;
+}
+.lottery-result img{
+    width:50px;
+    height: 50px;
 }

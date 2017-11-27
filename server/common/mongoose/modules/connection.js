@@ -15,10 +15,14 @@ const connectionSchema = new mongoose.Schema({
   socketId : String,
   //微信头像
   headimgurl : String,
+  //投票信息
+  vote: Object,
   //参与互动次数
   times : Number,
-  //投票信息
-  vote: Object
+  //是否被拉入黑名单
+  shield: Boolean,
+  lottery: String
+  
 })
 const connection = mongoose.model('connection', connectionSchema)
 export default connection

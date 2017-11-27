@@ -35,13 +35,12 @@ const handle = socket => {
     })
     //公共消息
     socket.on("public_message", async(msg) => {
-        //查找并为消息添加用户头像
-        let info = await db.connection.findOne({
-            "nickname": msg.from
-        }, {
-            _id: 0,
-            headimgurl: 1
-        })
+        //查找并为消息添加用户头像,增加用户互动数
+        let info = await db.connection.findOneAndUpdate({
+            "nickname": msg.from,
+            "openid": msg.openid
+        },{$inc:{times:1}},{upsert:false,new:true})
+        msg.times = !!info.times?info.times:0
         msg.headimgurl = info.headimgurl
         msg.date = new Date().getTime()
         //如果是图片消息则向微信获取临时素材
@@ -100,13 +99,13 @@ const handle = socket => {
             query = query.activeVote
         }
         let socketId = user.socketId
-        socket.to(socketId).emit("switchVote",query)
+        socket.broadcast.emit("switchVote",query)
     })
     //投票检查
     socket.on("vote_check",async(info) => {
         let connection =  await db.connection.findOne({$and:[{nickname:info.nickname},{openid:info.openid}]},{_id:0,vote:1,socketId:1})
         // let socketId = user.socketId
-        if(!connection || !!connection.vote){
+        if(!connection || (!!connection.vote && connection.vote.voteId == info.voteId)){
             socket.emit("vote_check",{res: "-1"})
         }else{
             socket.emit("vote_check",{res: "1"})
@@ -119,16 +118,35 @@ const handle = socket => {
         let voteId = vote.voteId
         for(var i = 0;i < arr.length;i++){
             if(arr[i] == "voteId" || arr[i] == "username" || arr[i] == "openid" || arr[i] == "nickname") continue
-            let count = await db.wall.findOne({$and:[{username:username},{"activeVote.options":{$elemMatch:{id:vote[arr[i]]}}}]},{_id:0,"activeVote.options.$.count":1})
-            count = !!count.activeVote.options[0].count ? parseInt(count.activeVote.options[0].count):0
-            count++
-            let info = await db.wall.findOneAndUpdate({$and:[{username:username},{"activeVote.options":{$elemMatch:{id:vote[arr[i]]}}}]},{$set:{"activeVote.options.$.count":count}})
+            // let count = await db.wall.findOne({$and:[{username:username},{"activeVote.options":{$elemMatch:{id:vote[arr[i]]}}}]},{_id:0,"activeVote.options.$.count":1})
+            // count = !!count.activeVote.options[0].count ? parseInt(count.activeVote.options[0].count):0
+            // count++
+            let info = await db.wall.findOneAndUpdate({$and:[{username:username},{"activeVote.options":{$elemMatch:{id:vote[arr[i]]}}}]},{$inc:{"activeVote.options.$.count":1}})
         }
-        let connection =  await db.connection.findOneAndUpdate({$and:[{nickname:vote.nickname},{openid:vote.openid}]},{$set:{vote:vote}})
+        let connection =  await db.connection.findOneAndUpdate({$and:[{nickname:vote.nickname},{openid:vote.openid}]},{$set:{vote:vote},$inc:{times:1}},{upsert:false,new:true})
         let res = await db.wall.findOne({username:username},{_id:0,activeVote:1})
         res = res.activeVote.options
-        socket.broadcast.emit("vote",{res:res})
-        socket.emit("vote",{res:res})
+        socket.broadcast.emit("vote",{
+            res:res,
+            nickname: vote.nickname,
+            openid: vote.openid,
+            headimgurl: connection.headimgurl,
+            times: connection.times
+        })
+        socket.emit("vote",{
+            res:res,
+            nickname: vote.nickname,
+            openid: vote.openid,
+            headimgurl: connection.headimgurl,
+            times: connection.times
+        })
+    })
+    //存储抽奖信息
+    socket.on("lottery",async(info) => {
+        if(!!info && !!info.openid){
+            await db.connection.findOneAndUpdate({openid:info.openid},{$set:{lottery:"1"}})
+            socket.broadcast.emit(info)
+        }
     })
     socket.on("disconnect", () => {
         console.log(socket.nickname + "离开")
