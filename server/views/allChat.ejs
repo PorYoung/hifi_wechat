@@ -580,7 +580,8 @@
                             content: '<img src="'+localData+'" id="weixinLocalImage'+images.date+'" data-imgurl="'+localData+'" class="imageUnUpload weixinLocalImage">',
                             headimgurl: "<%= headimgurl %>",
                             sex: '<%= sex %>',
-                            province: '<%= province %>'
+                            province: '<%= province %>',
+                            openid: '<%= openid %>'
                         }
                         $("#listPanel").append(messageBoxCompiled(msg,"right"));
                         var scrollHeight = $("#listPanel")[0].scrollHeight - $("#listPanel")[0].clientHeight;
