@@ -137,20 +137,23 @@
         }
     </style>
     <script>
+        //初始化加载设置
+        const config = {
+            flags:{},
+            guests: [],
+            QRSrc:null,
+            UI:{
+                username: "<%= username %>",
+                background: "<%= UI.background %>",
+                avatar: "<%= UI.avatar %>",
+                bgtext: "<%= UI.bgtext %>",
+                bgtextContent: "<%= UI.bgtextContent %>"
+            },
+            messageData:[],
+            connections:[]
+        }
         $(function($){
-            //初始化加载设置
-            const config = {
-                flags:{},
-                guests: [],
-                QRSrc:null,
-                UI:{
-                    username: "<%= username %>",
-                    background: "<%= UI.background %>",
-                    avatar: "<%= UI.avatar %>",
-                    bgtext: "<%= UI.bgtext %>",
-                    bgtextContent: "<%= UI.bgtextContent %>"
-                }
-            }
+            
             var IO = io('/allChat')
             $.get('/api/wall/flags?username=<%= username %>',function(data){
                 if(!!data && data != '-1'){
@@ -1259,6 +1262,163 @@
                     $("#c-r-s-panel-host-input-number").children('input').val('2')
                 }
             })
+
+            //初始化拉取连接用户信息
+            $.get('/api/wall/connections?username=<%= username %>',function(data){
+                data.forEach(function(item){
+                    if(!item.times){
+                        return item.times = 0
+                    }
+                })
+                config.connections = data
+                config.connections.sort(function(a,b){
+                    return parseInt(b.times) - parseInt(a.times)
+                })
+            })
+
+            //初始化拉取数据
+            var page = 0
+            function initGetMessage(){
+                if(!page) page = 0
+                page = parseInt(page)
+                $.get("/api/allChat/getMessage", {
+                    "page": page,
+                    "origin": window.location.href
+                }, function(data){
+                    if(data == "-1" || data.length <= 0){
+                        console.log('[初始化数据:数据库为空]')
+                    }else{
+                        var length = config.messageData.length
+                        data.forEach(function(item){
+                            item.content = item.content.replace(/\<div\>.+\<\/div\>/,"😁")
+                            item.content = item.content.replace(/\<div\>/g,"😏")
+                            item.content = item.content.replace(/\<\/div\>/g,"😏")
+                            item.content = item.content.replace(/\<br\>/g,"😏")
+                            item.content = item.content.replace(/\<p\>/g,"😏")
+                            item.content = item.content.replace(/\<\/p\>/g,"😏")
+                            config.messageData.push(item)
+                            console.info("[新数据入库]")
+                        })
+                        if(config.messageData.length <= 10 && page >= 2 && page <= 5){
+                            return initGetMessage(++page)
+                        }
+                        if(++page <= 3){
+                            return initGetMessage()
+                        }
+                        config.messageData.forEach(function(msg){
+                            var html = `<p data-openid="${msg.openid}"><span>${msg.from}:</span>`
+                            if(!!msg.MsgType&&msg.MsgType=="image"){
+                                html += `<img src="${msg.mediaId}"></p>`
+                            }else{
+                                html += `<span>${msg.content}</span></p>`
+                            }
+                            $("#c-r-d-message").append(html)
+                        })
+                        $("#c-r-d-message").children("header").html(config.messageData.length)
+                        $("#c-r-d-message").children("p").children("img").mouseenter(function(){
+                            var src = $(this).attr("src")
+                            $("#c-r-d-show-panel").html('<img src="'+ src +'">').show()
+                        }).mouseleave(function(){
+                            $("#c-r-d-show-panel").hide()
+                        })
+                        $("#c-r-d-message").children("p").click(function(e){
+                            e.stopPropagation()
+                            var openid = $(this).attr("data-openid"),
+                                info = null
+                            for(var i = 0;i < config.connections.length;i++){
+                                if(config.connections[i].openid == openid){
+                                    info = config.connections[i]
+                                    break;
+                                }
+                            }
+                            var html = null
+                            if(!!info){
+                                html = `
+                                <p><img src = "${info.headimgurl}"></p>
+                                <p><span>名称</span><span>${info.nickname}</span></p>
+                                <p><span>性别</span><span>${info.sex == "1"?"male":"female"}</span></p>
+                                <p><span>省份</span><span>${info.province}</span></p>
+                                <p><span>互动</span><span>${info.times}</span>
+                                <p><span id="c-r-d-delete">删除该条消息</span><span id="c-r-d-shield">屏蔽此人</span></p>
+                                `
+                            }else{
+                                html="<p>信息或用户不存在</p>"
+                            }
+                            $("#c-r-d-show-info").html(html).css({
+                                transition:"right 1s",
+                                right:"0"
+                            }).attr({
+                                "data-open-flag":"1"
+                            })
+                        })
+                    }
+                })
+            }
+            initGetMessage()
+            $('body').on({
+                'click':function(e){
+                    var target = e.target;
+                    if(target != $("#c-r-d-show-info")[0] && $("#c-r-d-show-info").attr("data-open-flag") != "0"){
+                        $("#c-r-d-show-info").css({
+                            right:"-55%"
+                        }).attr({"data-open-flag":"0"})
+                    }
+                }
+            })
+
+            IO.on("public_message",function(msg){
+                msg.content = msg.content.replace(/\<div\>.+\<\/div\>/,"😁")
+                msg.content = msg.content.replace(/\<div\>/g,"😏")
+                msg.content = msg.content.replace(/\<\/div\>/g,"😏")
+                msg.content = msg.content.replace(/\<br\>/g,"😏")
+                msg.content = msg.content.replace(/\<p\>/g,"😏")
+                msg.content = msg.content.replace(/\<\/p\>/g,"😏")
+                config.messageData.push(msg)
+                console.info("[新数据入库]")
+                var html = `<p data-openid="${msg.openid}"><span>${msg.from}:</span>`
+                if(!!msg.MsgType&&msg.MsgType=="image"){
+                    html += `<img src="${msg.mediaId}"></p>`
+                }else{
+                    html += `<span>${msg.content}</span></p>`
+                }
+                $("#c-r-d-message").append(html)
+                $("#c-r-d-message").children("p:last-child").children("img").mouseenter(function(){
+                    var src = $(this).attr("src")
+                    $("#c-r-d-show-panel").html('<img src="'+ src +'">').show()
+                }).mouseleave(function(){
+                    $("#c-r-d-show-panel").hide()
+                })
+                $("#c-r-d-message").children("p:last-child").click(function(e){
+                            e.stopPropagation()
+                            var openid = $(this).attr("data-openid"),
+                                info = null
+                            for(var i = 0;i < config.connections.length;i++){
+                                if(config.connections[i].openid == openid){
+                                    info = config.connections[i]
+                                    break;
+                                }
+                            }
+                            var html = null
+                            if(!!info){
+                                html = `
+                                <p><img src = "${info.headimgurl}"></p>
+                                <p><span>名称</span><span>${info.nickname}</span></p>
+                                <p><span>性别</span><span>${info.sex == "1"?"male":"female"}</span></p>
+                                <p><span>省份</span><span>${info.province}</span></p>
+                                <p><span>互动</span><span>${info.times}</span>
+                                <p><span id="c-r-d-delete">删除该条消息</span><span id="c-r-d-shield">屏蔽此人</span></p>
+                                `
+                            }else{
+                                html="<p>信息或用户不存在</p>"
+                            }
+                            $("#c-r-d-show-info").html(html).css({
+                                transition:"right 1s",
+                                right:"0"
+                            }).attr({
+                                "data-open-flag":"1"
+                            })
+                        })
+            })
         })
     </script>
 </head>
@@ -1436,7 +1596,12 @@
                 <div id="c-r-s-panel-video" class="c-r-s-panel" style="background:rgb(248, 104, 104)"></div>
             </div>
             <div id="c-r-d">
-
+                <div id="c-r-d-message">
+                    <header>0</header>
+                </div>
+                <div id="c-r-d-shield"></div>
+                <div id="c-r-d-show-panel" style="display: none;"></div>
+                <div id="c-r-d-show-info">
             </div>
             <div id="c-r-c">
 

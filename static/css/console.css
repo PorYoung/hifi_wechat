@@ -515,3 +515,94 @@ text-align: center;
     border-radius: 2em;
     background: rgb(57,138,202);
 }
+
+#c-r-d{
+    flex-direction: row !important;
+    justify-content: space-around;
+    overflow: hidden;
+    padding: 20px;
+}
+#c-r-d-message::-webkit-scrollbar,#c-r-d-shield::-webkit-scrollbar{
+    width: 5px;
+}
+#c-r-d-message::-webkit-scrollbar-track,#c-r-d-shield::-webkit-scrollbar-track{
+    border-radius: 2em;
+    background: #eeeeee;
+}
+#c-r-d-message::-webkit-scrollbar-thumb,#c-r-d-shield::-webkit-scrollbar-thumb{
+    border-radius: 2em;
+    background: rgb(57,138,202);
+}
+#c-r-d-message{
+    width: 70%;
+    height: 100%;
+    border: 1px solid #d17c78;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+}
+#c-r-d-shield{
+    width: 20%;
+    min-height: 100px;
+    border: 1px solid #d17c78;
+}
+#c-r-d-message > p{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid rgba(205,104,33,0.1);
+}
+#c-r-d-message header{
+    height: 50px;
+    text-align: center;
+    border-radius: 0 0 50% 50%;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    text-shadow: 0 0 3px #d17c78;
+    background: rgba(209, 124, 120,.5);
+}
+#c-r-d-message img{
+    width: 50px;
+    height: 50px;
+}
+#c-r-d-show-panel{
+    position: absolute;
+    width: calc(70% - 80px);
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+}
+#c-r-d-message > p{
+    transition: all .5s;
+    border-radius: 8px;
+    cursor: pointer;
+}
+#c-r-d-message > p:hover{
+    background: #d17c78;
+    transform: scale3d(.95,.95,-1);
+}
+#c-r-d-show-panel img{
+    max-width: 100%;
+    max-height: 100%;
+    flex: 1;
+}
+#c-r-d-show-info{
+    position: absolute;
+    width: 50%;
+    right: -55%;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: space-around;
+    text-align: center;
+    border: 1px solid #d17c78;
+    height: 100%;
+    background: rgba(209, 124, 120,0.7);
+}

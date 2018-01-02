@@ -40,8 +40,28 @@ app.use(session({
 
 app.use(router)
 
-app.get(['/', '/index.html'], (req, res) => {
-	res.send('Hello world!')
+app.get(['/', '/index.html'],(req, res) => {
+	res.send('hello world!')	
+})
+app.get('/video', (req, res) => {
+	// res.send('Hello world!')
+	if(!!req.query.scene){
+		if(req.query.scene=="phone")
+			res.render("video",{
+				remoteVideo:"false",
+				localVideo:"true"
+			})
+		else if(req.query.scene=="screen")
+			res.render("video",{
+				remoteVideo:"true",
+				localVideo:"false"
+			})
+		else{
+			return res.redirect('/wall')
+		}	
+	}else{n
+		return res.redirect('/wall')
+	}
 })
 
 const allChat = io.of("/allChat")

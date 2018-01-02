@@ -11,7 +11,8 @@ const messageSchema = new mongoose.Schema({
   sex: String,
   province: String,
   //微信提供的用于获取资源的media_id
-  mediaId : String
+  mediaId : String,
+  openid: String
 })
 const message = mongoose.model('message', messageSchema)
 export default message
