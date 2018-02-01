@@ -22,7 +22,7 @@ const connectionSchema = new mongoose.Schema({
   //是否被拉入黑名单
   shield: Boolean,
   lottery: String
-  
+
 })
 const connection = mongoose.model('connection', connectionSchema)
 export default connection

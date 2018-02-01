@@ -3,10 +3,10 @@ const express = require('express')
 /**************服务端配置开始****************/
 
 //让服务端支持ES6/ES7/ES8
-require("babel-core/register")({
+require('babel-core/register')({
   presets: ['es2015']
 })
-require("babel-polyfill")
+require('babel-polyfill')
 
 //服务端入口文件
 const app = require('../server')

@@ -1,5 +1,5 @@
 //连接数据库
-import dbConnetion from './connection' 
+import dbConnetion from './connection'
 //引入数据库操作模型
 import connection from './modules/connection'
 import user from './modules/user'

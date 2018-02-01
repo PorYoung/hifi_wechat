@@ -18,7 +18,7 @@ const dbConnection = mongoose.connect(uri, {
 
 dbConnection.on('error', console.error.bind(console, 'connection error:'))
 dbConnection.once('open', function () {
-    console.log('数据库链接成功')
+  console.log('数据库链接成功')
 })
 
 export default dbConnection

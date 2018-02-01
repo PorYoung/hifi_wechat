@@ -8,9 +8,9 @@ export default class {
     if(req.session.username){
       console.log(req.session.username)
     }else if(!!req.url.match(/^\/wall\/activeVote/) && !!req.query.openid){
-
+      //
     }
-    else if(!!req.url.match(/^\/wall/)){
+    else if(req.url.match(/^\/wall/)){
       return res.redirect('/login')
     }
     //用户的用户

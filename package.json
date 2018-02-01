@@ -12,7 +12,8 @@
     "formidable": "^1.1.1",
     "mongoose": "^4.11.11",
     "sha1": "^1.1.1",
-    "socket.io": "^2.0.3"
+    "socket.io": "^2.0.3",
+    "superagent": "^3.8.2"
   },
   "name": "hifi_wechat",
   "version": "1.2.0",

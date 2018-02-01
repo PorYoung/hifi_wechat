@@ -1,6 +1,6 @@
 import ejs from 'ejs'
 
-const template = 
+const template =
 `<xml>
 <ToUserName><![CDATA[<%= content.toUser %>]]></ToUserName>
 <FromUserName><![CDATA[<%= content.fromUser %>]]></FromUserName>
@@ -19,7 +19,7 @@ const template =
 <MediaId><![CDATA[<%= content.media_id %>]]></MediaId>
 <Title><![CDATA[<%= content.title %>]]></Title>
 <Description><![CDATA[<%= content.description %>]]></Description>
-</Video> 
+</Video>
 <% }else if(content.MsgType === 'music'){ %>
 <MsgType><![CDATA[music]]></MsgType>
 <Music>
@@ -35,7 +35,7 @@ const template =
     <Articles>
     <% content.news.forEach(function(item){ %>
         <item>
-        <Title><![CDATA[<%= item.title %>]]></Title> 
+        <Title><![CDATA[<%= item.title %>]]></Title>
         <Description><![CDATA[<%= item.description %>]]></Description>
         <PicUrl><![CDATA[<%= item.picurl %>]]></PicUrl>
         <Url><![CDATA[<%= item.url %>]]></Url>
@@ -50,5 +50,5 @@ const reply = content => {
 }
 
 export default {
-    reply
+  reply
 }

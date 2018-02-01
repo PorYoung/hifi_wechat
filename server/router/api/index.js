@@ -6,10 +6,9 @@ import wallRouter from './wall'
 
 const apiRouter = express.Router()
 
-
 apiRouter
-    .use(allChatRouter)
-    .use(wechatRouter)
-    .use(wallRouter)
+  .use(allChatRouter)
+  .use(wechatRouter)
+  .use(wallRouter)
 
 export default apiRouter
